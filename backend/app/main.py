@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import checklist, deals, budget
+from app.routers import checklist, deals, budget, users, community
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
@@ -18,6 +18,8 @@ app.add_middleware(
 app.include_router(checklist.router)
 app.include_router(deals.router)
 app.include_router(budget.router)
+app.include_router(users.router)
+app.include_router(community.router)
 
 
 @app.get("/")

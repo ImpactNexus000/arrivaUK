@@ -1,12 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import HeroHeader from '../components/HeroHeader';
-import { getChecklist, getDeals, getBudgetEntries } from '../api';
+import { getChecklist, getDeals, getBudgetEntries, getUser } from '../api';
+
+const ARRIVAL_LABELS = {
+  not_arrived: "Getting ready for the UK",
+  just_arrived: "Welcome to the UK!",
+  been_here: "Making the most of the UK",
+};
 
 const tiles = [
   {
     to: '/checklist',
-    label: 'Checklist',
+    label: 'Arrival checklist',
     desc: 'Track your tasks',
     color: 'bg-ios-green',
     icon: (
@@ -16,10 +22,33 @@ const tiles = [
     ),
   },
   {
+    to: '/community',
+    label: 'Community',
+    desc: 'Tips from students',
+    color: 'bg-ios-indigo',
+    icon: (
+      <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+      </svg>
+    ),
+  },
+  {
+    to: '/guide',
+    label: 'Local Guide',
+    desc: 'Nearby services',
+    color: 'bg-ios-blue',
+    icon: (
+      <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+      </svg>
+    ),
+  },
+  {
     to: '/deals',
     label: 'Deals',
     desc: 'Best offers',
-    color: 'bg-ios-blue',
+    color: 'bg-ios-orange',
     icon: (
       <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
@@ -27,35 +56,43 @@ const tiles = [
     ),
   },
   {
-    to: '/budget',
-    label: 'Budget',
-    desc: 'Manage finances',
-    color: 'bg-ios-orange',
-    icon: (
-      <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ),
-  },
-  {
     to: '/checklist',
     label: 'Documents',
     desc: 'Essential docs',
-    color: 'bg-ios-indigo',
+    color: 'bg-ios-red',
     icon: (
       <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
       </svg>
     ),
   },
+  {
+    to: '/budget',
+    label: 'Budget',
+    desc: 'Manage finances',
+    color: 'bg-[#FF9500]',
+    icon: (
+      <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+    ),
+  },
 ];
 
 export default function Home() {
+  const [user, setUser] = useState(null);
   const [stats, setStats] = useState({ checklist: 0, deals: 0, balance: 0 });
 
   useEffect(() => {
     async function load() {
       try {
+        const userId = localStorage.getItem('arrivauk_user_id');
+        if (userId) {
+          const profile = await getUser(userId);
+          setUser(profile);
+          localStorage.setItem('arrivauk_user_name', profile.name);
+        }
+
         const [items, deals, budget] = await Promise.all([
           getChecklist(),
           getDeals(),
@@ -77,10 +114,21 @@ export default function Home() {
     load();
   }, []);
 
+  const greeting = user
+    ? `Welcome, ${user.name}!`
+    : 'Welcome to ArriveUK';
+
+  const subtitle = user
+    ? ARRIVAL_LABELS[user.arrival_status] || user.university
+    : 'Your UK arrival companion';
+
   return (
-    <div className="pb-24">
-      <HeroHeader title="ArriveUK" subtitle="Your UK arrival companion">
-        <div className="flex gap-3 mt-2">
+    <div className="min-h-screen pb-24 flex flex-col">
+      <HeroHeader title={greeting} subtitle={subtitle}>
+        {user && (
+          <p className="text-[12px] text-white/50 mt-1">{user.university}</p>
+        )}
+        <div className="flex gap-3 mt-3">
           <div className="bg-white/15 rounded-xl px-4 py-2 text-center flex-1">
             <p className="text-[20px] font-bold text-white">{stats.checklist}</p>
             <p className="text-[11px] text-white/60">Tasks left</p>
@@ -98,18 +146,18 @@ export default function Home() {
         </div>
       </HeroHeader>
 
-      <div className="px-4 py-4">
+      <div className="px-4 py-4 flex-1 flex flex-col">
         <p className="text-[13px] font-semibold text-[#6b6b70] uppercase tracking-wider px-1 pt-2 pb-2">
           Quick Access
         </p>
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 flex-1">
           {tiles.map((tile) => (
             <Link
               key={tile.label}
               to={tile.to}
-              className="bg-white rounded-[18px] border border-black/[0.08] p-4 shadow-sm no-underline"
+              className="bg-white rounded-[18px] border border-black/[0.08] p-4 shadow-sm no-underline flex flex-col justify-center"
             >
-              <div className={`w-10 h-10 ${tile.color} rounded-xl flex items-center justify-center mb-3`}>
+              <div className={`w-10 h-10 ${tile.color} rounded-xl flex items-center justify-center mb-2.5`}>
                 {tile.icon}
               </div>
               <p className="text-[15px] font-semibold text-black">{tile.label}</p>

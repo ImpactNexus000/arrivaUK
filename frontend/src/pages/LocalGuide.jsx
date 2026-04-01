@@ -1,0 +1,146 @@
+import { useState } from 'react';
+import HeroHeader from '../components/HeroHeader';
+
+const CATEGORIES = ['All', 'GP', 'Supermarket', 'Pharmacy', 'Restaurant', 'Transport'];
+
+const LISTINGS = [
+  { name: 'Hatfield Health Centre', category: 'GP', distance: '0.3 mi', rating: 4.2, desc: 'NHS GP surgery near campus. Book online or walk in for urgent care.' },
+  { name: 'Lister House Surgery', category: 'GP', distance: '0.7 mi', rating: 4.0, desc: 'Friendly GP practice accepting new student registrations.' },
+  { name: 'Aldi Hatfield', category: 'Supermarket', distance: '0.4 mi', rating: 4.3, desc: 'Budget-friendly supermarket. Great for weekly shops on a student budget.' },
+  { name: 'Tesco Express', category: 'Supermarket', distance: '0.2 mi', rating: 3.9, desc: 'Convenient for quick top-ups. Open late for evening essentials.' },
+  { name: 'ASDA Hatfield', category: 'Supermarket', distance: '1.1 mi', rating: 4.1, desc: 'Larger supermarket with wider selection and George clothing.' },
+  { name: 'Lidl Hatfield', category: 'Supermarket', distance: '0.6 mi', rating: 4.2, desc: 'Affordable groceries with weekly changing special offers.' },
+  { name: 'Boots Pharmacy', category: 'Pharmacy', distance: '0.3 mi', rating: 4.1, desc: 'NHS prescriptions, flu jabs, and health advice available.' },
+  { name: 'Lloyds Pharmacy', category: 'Pharmacy', distance: '0.5 mi', rating: 3.8, desc: 'Prescription collection and over-the-counter medicines.' },
+  { name: 'Superdrug', category: 'Pharmacy', distance: '0.4 mi', rating: 4.0, desc: 'Health & beauty products plus pharmacy services.' },
+  { name: 'Nando\'s Hatfield', category: 'Restaurant', distance: '0.5 mi', rating: 4.4, desc: 'Popular peri-peri chicken spot. Student discount with NUS card.' },
+  { name: 'Papa Johns', category: 'Restaurant', distance: '0.3 mi', rating: 3.7, desc: 'Pizza delivery and collection. Regular student deals available.' },
+  { name: 'Hatfield Kebab House', category: 'Restaurant', distance: '0.4 mi', rating: 4.0, desc: 'Late-night kebabs and wraps. Student favourite after nights out.' },
+  { name: 'Subway', category: 'Restaurant', distance: '0.2 mi', rating: 3.9, desc: 'Build your own sub. Affordable lunch option near campus.' },
+  { name: 'Uno Bus - Route 601', category: 'Transport', distance: '0.1 mi', rating: 4.0, desc: 'Direct bus from campus to Hatfield station. Runs every 15 mins.' },
+  { name: 'Hatfield Railway Station', category: 'Transport', distance: '0.8 mi', rating: 3.8, desc: '25 mins to London Kings Cross. Get a 16-25 Railcard for savings.' },
+  { name: 'Uno Bus - Route 653', category: 'Transport', distance: '0.1 mi', rating: 3.9, desc: 'Campus to St Albans route. Useful for weekend shopping trips.' },
+];
+
+const CATEGORY_ICONS = {
+  GP: (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342" />
+    </svg>
+  ),
+  Supermarket: (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+    </svg>
+  ),
+  Pharmacy: (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  ),
+  Restaurant: (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 8.25v-1.5m0 1.5c-1.355 0-2.697.056-4.024.166C6.845 8.51 6 9.473 6 10.608v2.513m6-4.87c1.355 0 2.697.055 4.024.165C17.155 8.51 18 9.473 18 10.608v2.513m-3-4.87v-1.5m-6 1.5v-1.5m12 9.75l-1.5.75a3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0 3.354 3.354 0 00-3 0 3.354 3.354 0 01-3 0L3 16.5m15-3.38a48.474 48.474 0 00-6-.37c-2.032 0-4.034.126-6 .37" />
+    </svg>
+  ),
+  Transport: (
+    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m-9 0H3.375a1.125 1.125 0 01-1.125-1.125V14.25m17.25 4.5a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h1.125c.621 0 1.129-.504 1.09-1.124a17.902 17.902 0 00-3.213-9.193 2.056 2.056 0 00-1.58-.86H14.25M16.5 18.75h-2.25m0-11.177v-.958c0-.568-.422-1.048-.987-1.106a48.554 48.554 0 00-10.026 0 1.106 1.106 0 00-.987 1.106v7.635m12-6.677v6.677m0 4.5v-4.5m0 0h-12" />
+    </svg>
+  ),
+};
+
+const CATEGORY_COLORS = {
+  GP: { bg: 'bg-[#FFEAEA]', text: 'text-[#C0392B]' },
+  Supermarket: { bg: 'bg-[#E8F9EE]', text: 'text-[#1A7A3A]' },
+  Pharmacy: { bg: 'bg-[#E5F0FF]', text: 'text-[#1558B0]' },
+  Restaurant: { bg: 'bg-[#FFF3E0]', text: 'text-[#B95C00]' },
+  Transport: { bg: 'bg-[#EEE9FF]', text: 'text-[#4A35B0]' },
+};
+
+function Stars({ rating }) {
+  const full = Math.floor(rating);
+  const half = rating - full >= 0.5;
+  return (
+    <div className="flex items-center gap-0.5">
+      {[...Array(5)].map((_, i) => (
+        <svg
+          key={i}
+          className={`w-3.5 h-3.5 ${i < full ? 'text-ios-orange' : i === full && half ? 'text-ios-orange' : 'text-[#AEAEB2]'}`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+      <span className="text-[12px] text-[#6b6b70] ml-1">{rating}</span>
+    </div>
+  );
+}
+
+export default function LocalGuide() {
+  const [filter, setFilter] = useState('All');
+
+  const filtered = filter === 'All' ? LISTINGS : LISTINGS.filter((l) => l.category === filter);
+
+  return (
+    <div className="pb-24">
+      <HeroHeader title="Local Guide" subtitle="Nearby services around your campus">
+        <p className="text-[12px] text-white/50 mt-1">Based near University of Hertfordshire, Hatfield</p>
+      </HeroHeader>
+
+      {/* Filter chips */}
+      <div className="px-4 pt-4">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setFilter(cat)}
+              className={`px-4 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors ${
+                filter === cat
+                  ? 'bg-ios-blue text-white'
+                  : 'bg-white text-black border border-black/[0.08]'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-4 py-4">
+        <div className="flex flex-col gap-3">
+          {filtered.map((listing, idx) => {
+            const colors = CATEGORY_COLORS[listing.category];
+            return (
+              <div
+                key={idx}
+                className="bg-white rounded-[18px] border border-black/[0.08] p-4"
+              >
+                <div className="flex items-start gap-3">
+                  <div className={`w-10 h-10 ${colors.bg} rounded-xl flex items-center justify-center flex-shrink-0 ${colors.text}`}>
+                    {CATEGORY_ICONS[listing.category]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-[15px] font-semibold text-black">{listing.name}</p>
+                      <span className="text-[12px] text-[#6b6b70] whitespace-nowrap">{listing.distance}</span>
+                    </div>
+                    <Stars rating={listing.rating} />
+                    <p className="text-[13px] text-[#3C3C43] leading-relaxed mt-1.5">{listing.desc}</p>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {filtered.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-[15px] text-[#AEAEB2]">No listings in this category</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

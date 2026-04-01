@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
 # --- Checklist ---
@@ -48,6 +49,51 @@ class BudgetEntryCreate(BudgetEntryBase):
 
 class BudgetEntryResponse(BudgetEntryBase):
     id: int
+
+    class Config:
+        from_attributes = True
+
+
+# --- User Profile ---
+
+class UserProfileCreate(BaseModel):
+    name: str
+    student_type: str  # "international", "eu_eea", "uk_home"
+    university: str
+    arrival_status: str  # "not_arrived", "just_arrived", "been_here"
+
+class UserProfileResponse(UserProfileCreate):
+    id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+# --- Community ---
+
+class PostReplyCreate(BaseModel):
+    author_name: str
+    content: str
+
+class PostReplyResponse(PostReplyCreate):
+    id: int
+    post_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class CommunityPostCreate(BaseModel):
+    author_name: str
+    content: str
+    category: str
+
+class CommunityPostResponse(CommunityPostCreate):
+    id: int
+    likes_count: int
+    created_at: datetime
+    replies: list[PostReplyResponse] = []
 
     class Config:
         from_attributes = True

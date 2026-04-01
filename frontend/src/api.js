@@ -27,3 +27,17 @@ export const createBudgetEntry = (data) =>
   request('/budget/', { method: 'POST', body: JSON.stringify(data) });
 export const deleteBudgetEntry = (id) =>
   request(`/budget/${id}`, { method: 'DELETE' });
+
+// Users
+export const createUser = (data) =>
+  request('/users/', { method: 'POST', body: JSON.stringify(data) });
+export const getUser = (id) => request(`/users/${id}`);
+
+// Community
+export const getPosts = () => request('/community/');
+export const createPost = (data) =>
+  request('/community/', { method: 'POST', body: JSON.stringify(data) });
+export const likePost = (id) =>
+  request(`/community/${id}/like`, { method: 'POST' });
+export const replyToPost = (id, data) =>
+  request(`/community/${id}/reply`, { method: 'POST', body: JSON.stringify(data) });
