@@ -54,7 +54,7 @@ class BudgetEntryResponse(BudgetEntryBase):
         from_attributes = True
 
 
-# --- User Profile ---
+# --- User Profile / Auth ---
 
 class UserProfileCreate(BaseModel):
     name: str
@@ -62,12 +62,27 @@ class UserProfileCreate(BaseModel):
     university: str
     arrival_status: str  # "not_arrived", "just_arrived", "been_here"
 
-class UserProfileResponse(UserProfileCreate):
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+class UserProfileResponse(BaseModel):
     id: int
+    email: str
+    name: str
+    student_type: str
+    university: str
+    arrival_status: str
+    profile_picture: str | None = None
     created_at: datetime
 
     class Config:
         from_attributes = True
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserProfileResponse
 
 
 # --- Community ---

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import HeroHeader from '../components/HeroHeader';
-import { getChecklist, getDeals, getBudgetEntries, getUser } from '../api';
+import { getChecklist, getDeals, getBudgetEntries, getMe, getUploadUrl } from '../api';
 
 const ARRIVAL_LABELS = {
   not_arrived: "Getting ready for the UK",
@@ -86,12 +86,9 @@ export default function Home() {
   useEffect(() => {
     async function load() {
       try {
-        const userId = localStorage.getItem('arrivauk_user_id');
-        if (userId) {
-          const profile = await getUser(userId);
-          setUser(profile);
-          localStorage.setItem('arrivauk_user_name', profile.name);
-        }
+        const profile = await getMe();
+        setUser(profile);
+        localStorage.setItem('arrivauk_user_name', profile.name);
 
         const [items, deals, budget] = await Promise.all([
           getChecklist(),
@@ -126,7 +123,20 @@ export default function Home() {
     <div className="min-h-screen pb-24 flex flex-col">
       <HeroHeader title={greeting} subtitle={subtitle}>
         {user && (
-          <p className="text-[12px] text-white/50 mt-1">{user.university}</p>
+          <div className="flex items-center justify-between mt-1">
+            <p className="text-[12px] text-white/50">{user.university}</p>
+            <Link to="/profile" className="-mt-8">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white/30 shadow-lg">
+                {user.profile_picture ? (
+                  <img src={getUploadUrl(user.profile_picture)} alt={user.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-white/20 flex items-center justify-center">
+                    <span className="text-sm font-bold text-white">{user.name.charAt(0).toUpperCase()}</span>
+                  </div>
+                )}
+              </div>
+            </Link>
+          </div>
         )}
         <div className="flex gap-3 mt-3">
           <div className="bg-white/15 rounded-xl px-4 py-2 text-center flex-1">
