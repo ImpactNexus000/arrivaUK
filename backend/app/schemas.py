@@ -9,11 +9,47 @@ class ChecklistItemBase(BaseModel):
     description: str | None = None
 
 class ChecklistItemCreate(ChecklistItemBase):
-    pass
+    category: str = "essentials"
+    urgency: str = "first_week"
+    icon: str | None = None
 
 class ChecklistItemResponse(ChecklistItemBase):
     id: int
+    user_id: int
     completed: bool
+    category: str
+    urgency: str
+    icon: str | None = None
+    is_default: bool
+    sort_order: int
+
+    class Config:
+        from_attributes = True
+
+
+# --- Documents ---
+
+class DocumentCreate(BaseModel):
+    title: str
+    description: str | None = None
+    category: str = "other"
+    tip: str | None = None
+    icon: str | None = None
+
+class DocumentUpdateStatus(BaseModel):
+    status: str  # "not_started", "in_progress", "ready"
+
+class DocumentResponse(BaseModel):
+    id: int
+    user_id: int
+    title: str
+    description: str | None = None
+    category: str
+    status: str
+    icon: str | None = None
+    tip: str | None = None
+    is_default: bool
+    sort_order: int
 
     class Config:
         from_attributes = True
@@ -88,7 +124,6 @@ class TokenResponse(BaseModel):
 # --- Community ---
 
 class PostReplyCreate(BaseModel):
-    author_name: str
     content: str
 
 class PostReplyResponse(PostReplyCreate):
@@ -100,12 +135,19 @@ class PostReplyResponse(PostReplyCreate):
         from_attributes = True
 
 class CommunityPostCreate(BaseModel):
-    author_name: str
     content: str
     category: str
 
-class CommunityPostResponse(CommunityPostCreate):
+class CommunityPostUpdate(BaseModel):
+    content: str | None = None
+    category: str | None = None
+
+class CommunityPostResponse(BaseModel):
     id: int
+    user_id: int | None = None
+    author_name: str
+    content: str
+    category: str
     likes_count: int
     created_at: datetime
     replies: list[PostReplyResponse] = []

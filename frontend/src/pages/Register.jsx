@@ -1,29 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { register } from '../api';
-
-const UNIVERSITIES = [
-  'University of Hertfordshire',
-  'University of London',
-  'University of Manchester',
-  'University of Birmingham',
-  'University of Leeds',
-  'University of Edinburgh',
-  'University of Glasgow',
-  'University of Bristol',
-  'University of Warwick',
-  'University of Sheffield',
-  'University of Nottingham',
-  'University of Southampton',
-  'University of Liverpool',
-  'University of Leicester',
-  'University of Sussex',
-  'University of East London',
-  'University of Westminster',
-  'University of Greenwich',
-  'Coventry University',
-  'De Montfort University',
-];
+import { register, getUniversities } from '../api';
 
 const STUDENT_TYPES = [
   { value: 'international', label: 'International Student', desc: 'Non-EU/EEA country', icon: '🌍' },
@@ -72,10 +49,15 @@ export default function Register({ onAuth }) {
   const [pictureFile, setPictureFile] = useState(null);
   const [picturePreview, setPicturePreview] = useState(null);
   const [uniSearch, setUniSearch] = useState('');
+  const [universities, setUniversities] = useState([]);
 
-  const filteredUnis = UNIVERSITIES.filter((u) =>
-    u.toLowerCase().includes(uniSearch.toLowerCase())
-  );
+  useEffect(() => {
+    getUniversities().then(setUniversities).catch(() => {});
+  }, []);
+
+  const filteredUnis = uniSearch
+    ? universities.filter((u) => u.toLowerCase().includes(uniSearch.toLowerCase()))
+    : universities;
 
   const strength = getPasswordStrength(form.password);
   const passwordsMatch = form.password && form.confirmPassword && form.password === form.confirmPassword;

@@ -8,9 +8,30 @@ class ChecklistItem(Base):
     __tablename__ = "checklist_items"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False)
     title = Column(String, nullable=False)
     description = Column(String)
     completed = Column(Boolean, default=False)
+    category = Column(String, nullable=False, default="essentials")
+    urgency = Column(String, nullable=False, default="first_week")
+    icon = Column(String, nullable=True)
+    is_default = Column(Boolean, default=False)
+    sort_order = Column(Integer, default=0)
+
+
+class Document(Base):
+    __tablename__ = "documents"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False)
+    title = Column(String, nullable=False)
+    description = Column(String)
+    category = Column(String, nullable=False, default="travel")
+    status = Column(String, nullable=False, default="not_started")  # "not_started", "in_progress", "ready"
+    icon = Column(String, nullable=True)
+    tip = Column(String, nullable=True)
+    is_default = Column(Boolean, default=False)
+    sort_order = Column(Integer, default=0)
 
 
 class Deal(Base):
@@ -50,6 +71,7 @@ class CommunityPost(Base):
     __tablename__ = "community_posts"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=True)
     author_name = Column(String, nullable=False)
     content = Column(String, nullable=False)
     category = Column(String, nullable=False)  # "banks", "ni_number", "shopping", "housing", "transport", "general"

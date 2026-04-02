@@ -8,6 +8,7 @@ import Budget from './pages/Budget';
 import Community from './pages/Community';
 import LocalGuide from './pages/LocalGuide';
 import More from './pages/More';
+import Documents from './pages/Documents';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
@@ -36,6 +37,7 @@ export default function App() {
         <Route path="/budget" element={<Budget />} />
         <Route path="/community" element={<Community />} />
         <Route path="/guide" element={<LocalGuide />} />
+        <Route path="/documents" element={<Documents />} />
         <Route path="/more" element={<More />} />
         <Route path="/profile" element={<Profile onLogout={() => setAuthed(false)} />} />
         <Route path="*" element={<Navigate to="/" replace />} />

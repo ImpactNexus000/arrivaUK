@@ -56,7 +56,7 @@ const tiles = [
     ),
   },
   {
-    to: '/checklist',
+    to: '/documents',
     label: 'Documents',
     desc: 'Essential docs',
     color: 'bg-ios-red',

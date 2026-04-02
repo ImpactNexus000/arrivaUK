@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.database import engine, Base
-from app.routers import checklist, deals, budget, users, community
+from app.routers import checklist, deals, budget, users, community, universities, documents
 
 # Create all tables on startup
 Base.metadata.create_all(bind=engine)
@@ -27,6 +27,8 @@ app.include_router(deals.router)
 app.include_router(budget.router)
 app.include_router(users.router)
 app.include_router(community.router)
+app.include_router(universities.router)
+app.include_router(documents.router)
 
 
 @app.get("/")
