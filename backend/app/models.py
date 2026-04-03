@@ -39,18 +39,35 @@ class Deal(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     title = Column(String, nullable=False)
+    provider = Column(String, nullable=False)
     description = Column(String)
-    category = Column(String)
+    category = Column(String, nullable=False)
+    savings = Column(String, nullable=True)
+    how_to_claim = Column(String, nullable=True)
     link = Column(String)
+    icon = Column(String, nullable=True)
+    sort_order = Column(Integer, default=0)
 
 
 class BudgetEntry(Base):
     __tablename__ = "budget_entries"
 
     id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False)
     label = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
     entry_type = Column(String, nullable=False)  # "income" or "expense"
+    category = Column(String, nullable=False, default="other")
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
+class BudgetLimit(Base):
+    __tablename__ = "budget_limits"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user_profiles.id"), nullable=False)
+    category = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
 
 
 class UserProfile(Base):

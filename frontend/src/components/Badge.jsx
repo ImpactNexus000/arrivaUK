@@ -4,6 +4,7 @@ const variants = {
   orange: 'bg-[#FFF3E0] text-[#B95C00]',
   blue:   'bg-[#E5F0FF] text-[#1558B0]',
   purple: 'bg-[#EEE9FF] text-[#4A35B0]',
+  indigo: 'bg-[#EEEAFF] text-[#5856D6]',
   gray:   'bg-[#F0F0F5] text-[#6b6b70]',
 };
 

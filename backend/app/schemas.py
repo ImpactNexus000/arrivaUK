@@ -57,17 +57,17 @@ class DocumentResponse(BaseModel):
 
 # --- Deals ---
 
-class DealBase(BaseModel):
-    title: str
-    description: str | None = None
-    category: str | None = None
-    link: str | None = None
-
-class DealCreate(DealBase):
-    pass
-
-class DealResponse(DealBase):
+class DealResponse(BaseModel):
     id: int
+    title: str
+    provider: str
+    description: str | None = None
+    category: str
+    savings: str | None = None
+    how_to_claim: str | None = None
+    link: str | None = None
+    icon: str | None = None
+    sort_order: int
 
     class Config:
         from_attributes = True
@@ -75,16 +75,27 @@ class DealResponse(DealBase):
 
 # --- Budget ---
 
-class BudgetEntryBase(BaseModel):
+class BudgetEntryCreate(BaseModel):
     label: str
     amount: float
     entry_type: str  # "income" or "expense"
+    category: str = "other"
 
-class BudgetEntryCreate(BudgetEntryBase):
-    pass
-
-class BudgetEntryResponse(BudgetEntryBase):
+class BudgetEntryResponse(BudgetEntryCreate):
     id: int
+    user_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+class BudgetLimitSet(BaseModel):
+    category: str
+    amount: float
+
+class BudgetLimitResponse(BudgetLimitSet):
+    id: int
+    user_id: int
 
     class Config:
         from_attributes = True

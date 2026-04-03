@@ -30,8 +30,13 @@ function timeAgo(dateStr) {
   return `${days}d ago`;
 }
 
+const PAGE_SIZE = 10;
+
 export default function Community() {
   const [posts, setPosts] = useState([]);
+  const [total, setTotal] = useState(0);
+  const [hasMore, setHasMore] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [filter, setFilter] = useState('All');
   const [showAdd, setShowAdd] = useState(false);
   const [expandedPost, setExpandedPost] = useState(null);
@@ -48,8 +53,21 @@ export default function Community() {
 
   const load = async () => {
     try {
-      setPosts(await getPosts());
+      const data = await getPosts(0, PAGE_SIZE);
+      setPosts(data.posts);
+      setTotal(data.total);
+      setHasMore(data.has_more);
     } catch {}
+  };
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const data = await getPosts(posts.length, PAGE_SIZE);
+      setPosts((prev) => [...prev, ...data.posts]);
+      setHasMore(data.has_more);
+    } catch {}
+    setLoadingMore(false);
   };
 
   useEffect(() => { load(); }, []);
@@ -107,7 +125,7 @@ export default function Community() {
       <div className="bg-white border-b border-black/[0.08] px-5 pb-4 pt-14">
         <h1 className="text-[26px] font-bold tracking-tight text-black">Community</h1>
         <p className="text-[14px] text-[#6b6b70] mt-1">
-          {posts.length} {posts.length === 1 ? 'tip' : 'tips'} shared by students
+          {total} {total === 1 ? 'tip' : 'tips'} shared by students
         </p>
 
         <div className="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
@@ -330,9 +348,19 @@ export default function Community() {
           ))}
         </div>
 
+        {hasMore && (
+          <button
+            onClick={loadMore}
+            disabled={loadingMore}
+            className="w-full mt-4 py-3.5 rounded-[14px] bg-[#F2F2F7] text-[14px] font-semibold text-[#6b6b70] disabled:opacity-50"
+          >
+            {loadingMore ? 'Loading...' : 'Load More'}
+          </button>
+        )}
+
         <button
           onClick={() => setShowAdd(true)}
-          className="w-full mt-4 py-4 rounded-[14px] bg-ios-blue text-white text-base font-semibold tracking-tight"
+          className="w-full mt-3 py-4 rounded-[14px] bg-ios-blue text-white text-base font-semibold tracking-tight"
         >
           Share a Tip
         </button>

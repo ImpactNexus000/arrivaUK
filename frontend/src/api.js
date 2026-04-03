@@ -66,17 +66,24 @@ export const toggleComplete = (id) =>
 export const deleteChecklistItem = (id) =>
   request(`/checklist/${id}`, { method: 'DELETE' });
 
+// Local Guide
+export const getGuide = () => request('/guide/');
+
 // Deals
 export const getDeals = () => request('/deals/');
-export const createDeal = (data) =>
-  request('/deals/', { method: 'POST', body: JSON.stringify(data) });
+export const seedDeals = () => request('/deals/seed', { method: 'POST' });
 
-// Budget — entries can be created or deleted; no update endpoint currently
+// Budget
 export const getBudgetEntries = () => request('/budget/');
 export const createBudgetEntry = (data) =>
   request('/budget/', { method: 'POST', body: JSON.stringify(data) });
 export const deleteBudgetEntry = (id) =>
   request(`/budget/${id}`, { method: 'DELETE' });
+export const getBudgetLimits = () => request('/budget/limits');
+export const setBudgetLimit = (category, amount) =>
+  request('/budget/limits', { method: 'PUT', body: JSON.stringify({ category, amount }) });
+export const deleteBudgetLimit = (category) =>
+  request(`/budget/limits/${encodeURIComponent(category)}`, { method: 'DELETE' });
 
 // Users
 export const createUser = (data) =>
@@ -84,7 +91,8 @@ export const createUser = (data) =>
 export const getUser = (id) => request(`/users/${id}`);
 
 // Community
-export const getPosts = () => request('/community/');
+export const getPosts = (skip = 0, limit = 10) =>
+  request(`/community/?skip=${skip}&limit=${limit}`);
 export const createPost = (data) =>
   request('/community/', { method: 'POST', body: JSON.stringify(data) });
 export const updatePost = (id, data) =>

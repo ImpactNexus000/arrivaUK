@@ -1,26 +1,8 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import HeroHeader from '../components/HeroHeader';
+import { getGuide } from '../api';
 
 const CATEGORIES = ['All', 'GP', 'Supermarket', 'Pharmacy', 'Restaurant', 'Transport'];
-
-const LISTINGS = [
-  { name: 'Hatfield Health Centre', category: 'GP', distance: '0.3 mi', rating: 4.2, desc: 'NHS GP surgery near campus. Book online or walk in for urgent care.' },
-  { name: 'Lister House Surgery', category: 'GP', distance: '0.7 mi', rating: 4.0, desc: 'Friendly GP practice accepting new student registrations.' },
-  { name: 'Aldi Hatfield', category: 'Supermarket', distance: '0.4 mi', rating: 4.3, desc: 'Budget-friendly supermarket. Great for weekly shops on a student budget.' },
-  { name: 'Tesco Express', category: 'Supermarket', distance: '0.2 mi', rating: 3.9, desc: 'Convenient for quick top-ups. Open late for evening essentials.' },
-  { name: 'ASDA Hatfield', category: 'Supermarket', distance: '1.1 mi', rating: 4.1, desc: 'Larger supermarket with wider selection and George clothing.' },
-  { name: 'Lidl Hatfield', category: 'Supermarket', distance: '0.6 mi', rating: 4.2, desc: 'Affordable groceries with weekly changing special offers.' },
-  { name: 'Boots Pharmacy', category: 'Pharmacy', distance: '0.3 mi', rating: 4.1, desc: 'NHS prescriptions, flu jabs, and health advice available.' },
-  { name: 'Lloyds Pharmacy', category: 'Pharmacy', distance: '0.5 mi', rating: 3.8, desc: 'Prescription collection and over-the-counter medicines.' },
-  { name: 'Superdrug', category: 'Pharmacy', distance: '0.4 mi', rating: 4.0, desc: 'Health & beauty products plus pharmacy services.' },
-  { name: 'Nando\'s Hatfield', category: 'Restaurant', distance: '0.5 mi', rating: 4.4, desc: 'Popular peri-peri chicken spot. Student discount with NUS card.' },
-  { name: 'Papa Johns', category: 'Restaurant', distance: '0.3 mi', rating: 3.7, desc: 'Pizza delivery and collection. Regular student deals available.' },
-  { name: 'Hatfield Kebab House', category: 'Restaurant', distance: '0.4 mi', rating: 4.0, desc: 'Late-night kebabs and wraps. Student favourite after nights out.' },
-  { name: 'Subway', category: 'Restaurant', distance: '0.2 mi', rating: 3.9, desc: 'Build your own sub. Affordable lunch option near campus.' },
-  { name: 'Uno Bus - Route 601', category: 'Transport', distance: '0.1 mi', rating: 4.0, desc: 'Direct bus from campus to Hatfield station. Runs every 15 mins.' },
-  { name: 'Hatfield Railway Station', category: 'Transport', distance: '0.8 mi', rating: 3.8, desc: '25 mins to London Kings Cross. Get a 16-25 Railcard for savings.' },
-  { name: 'Uno Bus - Route 653', category: 'Transport', distance: '0.1 mi', rating: 3.9, desc: 'Campus to St Albans route. Useful for weekend shopping trips.' },
-];
 
 const CATEGORY_ICONS = {
   GP: (
@@ -80,13 +62,42 @@ function Stars({ rating }) {
 
 export default function LocalGuide() {
   const [filter, setFilter] = useState('All');
+  const [listings, setListings] = useState([]);
+  const [city, setCity] = useState('');
+  const [university, setUniversity] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [showAll, setShowAll] = useState(false);
 
-  const filtered = filter === 'All' ? LISTINGS : LISTINGS.filter((l) => l.category === filter);
+  useEffect(() => {
+    let ignore = false;
+    (async () => {
+      try {
+        const data = await getGuide();
+        if (!ignore) {
+          setListings(data.listings);
+          setCity(data.city || '');
+          setUniversity(data.university || '');
+        }
+      } catch {
+        // Not logged in or API unavailable
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    })();
+    return () => { ignore = true; };
+  }, []);
+
+  const INITIAL_COUNT = 8;
+  const allFiltered = filter === 'All' ? listings : listings.filter((l) => l.category === filter);
+  const filtered = showAll ? allFiltered : allFiltered.slice(0, INITIAL_COUNT);
+  const hasMore = allFiltered.length > filtered.length;
 
   return (
     <div className="pb-24">
       <HeroHeader title="Local Guide" subtitle="Nearby services around your campus">
-        <p className="text-[12px] text-white/50 mt-1">Based near University of Hertfordshire, Hatfield</p>
+        {city && (
+          <p className="text-[12px] text-white/50 mt-1">Based near {university}, {city}</p>
+        )}
       </HeroHeader>
 
       {/* Filter chips */}
@@ -95,7 +106,7 @@ export default function LocalGuide() {
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
-              onClick={() => setFilter(cat)}
+              onClick={() => { setFilter(cat); setShowAll(false); }}
               className={`px-4 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors ${
                 filter === cat
                   ? 'bg-ios-blue text-white'
@@ -109,9 +120,25 @@ export default function LocalGuide() {
       </div>
 
       <div className="px-4 py-4">
+        {loading && (
+          <div className="text-center py-16">
+            <p className="text-[15px] text-[#AEAEB2]">Loading local listings...</p>
+          </div>
+        )}
+
+        {!loading && listings.length === 0 && (
+          <div className="text-center py-16">
+            <p className="text-[28px] mb-3">📍</p>
+            <p className="text-[16px] font-semibold text-black">No listings yet for your area</p>
+            <p className="text-[14px] text-[#6b6b70] mt-1 max-w-[260px] mx-auto">
+              We're working on adding local guides for more university cities. Check back soon!
+            </p>
+          </div>
+        )}
+
         <div className="flex flex-col gap-3">
           {filtered.map((listing, idx) => {
-            const colors = CATEGORY_COLORS[listing.category];
+            const colors = CATEGORY_COLORS[listing.category] || { bg: 'bg-[#F0F0F5]', text: 'text-[#6b6b70]' };
             return (
               <div
                 key={idx}
@@ -127,7 +154,7 @@ export default function LocalGuide() {
                       <span className="text-[12px] text-[#6b6b70] whitespace-nowrap">{listing.distance}</span>
                     </div>
                     <Stars rating={listing.rating} />
-                    <p className="text-[13px] text-[#3C3C43] leading-relaxed mt-1.5">{listing.desc}</p>
+                    <p className="text-[13px] text-[#3C3C43] leading-relaxed mt-1.5">{listing.description}</p>
                   </div>
                 </div>
               </div>
@@ -135,7 +162,16 @@ export default function LocalGuide() {
           })}
         </div>
 
-        {filtered.length === 0 && (
+        {hasMore && (
+          <button
+            onClick={() => setShowAll(true)}
+            className="w-full mt-4 py-3.5 rounded-[14px] bg-[#F2F2F7] text-[14px] font-semibold text-[#6b6b70]"
+          >
+            Show All {allFiltered.length} Listings
+          </button>
+        )}
+
+        {!loading && listings.length > 0 && allFiltered.length === 0 && (
           <div className="text-center py-16">
             <p className="text-[15px] text-[#AEAEB2]">No listings in this category</p>
           </div>

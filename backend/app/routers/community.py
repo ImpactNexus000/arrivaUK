@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session, joinedload
 from app.database import get_db
 from app import models, schemas
@@ -7,14 +7,22 @@ from app.auth import get_current_user
 router = APIRouter(prefix="/community", tags=["Community"])
 
 
-@router.get("/", response_model=list[schemas.CommunityPostResponse])
-def get_posts(db: Session = Depends(get_db)):
-    return (
+@router.get("/")
+def get_posts(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(10, ge=1, le=50),
+    db: Session = Depends(get_db),
+):
+    total = db.query(models.CommunityPost).count()
+    posts = (
         db.query(models.CommunityPost)
         .options(joinedload(models.CommunityPost.replies))
         .order_by(models.CommunityPost.created_at.desc())
+        .offset(skip)
+        .limit(limit)
         .all()
     )
+    return {"posts": posts, "total": total, "has_more": skip + limit < total}
 
 
 @router.post("/", response_model=schemas.CommunityPostResponse)
