@@ -20,16 +20,18 @@ export default function App() {
 
   if (!authed) {
     return (
-      <Routes>
-        <Route path="/register" element={<Register onAuth={() => setAuthed(true)} />} />
-        <Route path="/login" element={<Login onAuth={() => setAuthed(true)} />} />
-        <Route path="*" element={<Navigate to="/login" replace />} />
-      </Routes>
+      <div className="app-shell">
+        <Routes>
+          <Route path="/register" element={<Register onAuth={() => setAuthed(true)} />} />
+          <Route path="/login" element={<Login onAuth={() => setAuthed(true)} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-ios-bg font-sans">
+    <div className="app-shell bg-ios-bg font-sans">
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/checklist" element={<Checklist />} />

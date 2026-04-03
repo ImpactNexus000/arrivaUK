@@ -34,9 +34,30 @@
   animation: fade-in 0.35s ease-out;
 }
 
+@keyframes fade-backdrop {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@utility animate-fade-backdrop {
+  animation: fade-backdrop 0.2s ease-out;
+}
+
 body {
   margin: 0;
   background: #F2F2F7;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Desktop layout */
+.app-shell {
+  min-height: 100dvh;
+}
+
+@media (min-width: 640px) {
+  .app-shell {
+    max-width: 75%;
+    margin: 0 auto;
+  }
 }

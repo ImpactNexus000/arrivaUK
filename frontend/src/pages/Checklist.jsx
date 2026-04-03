@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import HeroHeader from '../components/HeroHeader';
 import Badge from '../components/Badge';
 import AddModal from '../components/AddModal';
+import { useToast } from '../components/Toast';
 import { getChecklist, seedChecklist, createChecklistItem, toggleComplete, deleteChecklistItem } from '../api';
 
 const URGENCY_SECTIONS = [
@@ -42,6 +43,7 @@ export default function Checklist() {
   const [collapsed, setCollapsed] = useState({});
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', category: 'essentials', urgency: 'first_week' });
+  const toast = useToast();
 
   async function load() {
     try {
@@ -68,10 +70,13 @@ export default function Checklist() {
   }, []);
 
   const handleToggle = async (id) => {
+    const item = items.find((i) => i.id === id);
     setItems((prev) => prev.map((i) => i.id === id ? { ...i, completed: !i.completed } : i));
     try {
       await toggleComplete(id);
+      toast(item?.completed ? 'Task unchecked' : 'Task completed', 'success');
     } catch {
+      toast('Failed to update task', 'error');
       load();
     }
   };
@@ -80,7 +85,9 @@ export default function Checklist() {
     setItems((prev) => prev.filter((i) => i.id !== id));
     try {
       await deleteChecklistItem(id);
+      toast('Task deleted', 'success');
     } catch {
+      toast('Failed to delete task', 'error');
       load();
     }
   };
@@ -88,10 +95,15 @@ export default function Checklist() {
   const handleAdd = async (e) => {
     e.preventDefault();
     if (!form.title.trim()) return;
-    await createChecklistItem(form);
-    setForm({ title: '', description: '', category: 'essentials', urgency: 'first_week' });
-    setShowAdd(false);
-    load();
+    try {
+      await createChecklistItem(form);
+      toast('Task added', 'success');
+      setForm({ title: '', description: '', category: 'essentials', urgency: 'first_week' });
+      setShowAdd(false);
+      load();
+    } catch {
+      toast('Failed to add task', 'error');
+    }
   };
 
   const filtered = filter === 'all' ? items : items.filter((i) => i.category === filter);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import HeroHeader from '../components/HeroHeader';
 import AddModal from '../components/AddModal';
+import { useToast } from '../components/Toast';
 import { getDocuments, seedDocuments, updateDocumentStatus, createDocument, deleteDocument } from '../api';
 
 const CATEGORIES = [
@@ -26,6 +27,7 @@ export default function Documents() {
   const [expandedId, setExpandedId] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', category: 'other', tip: '' });
+  const toast = useToast();
 
   useEffect(() => {
     let ignore = false;
@@ -52,23 +54,36 @@ export default function Documents() {
     setDocs((prev) => prev.map((d) => d.id === doc.id ? { ...d, status: nextStatus } : d));
     try {
       await updateDocumentStatus(doc.id, nextStatus);
+      toast(`Marked as ${STATUS_CONFIG[nextStatus].label.toLowerCase()}`, 'success');
     } catch {
+      toast('Failed to update status', 'error');
       reload();
     }
   }
 
   async function handleDelete(id) {
     setDocs((prev) => prev.filter((d) => d.id !== id));
-    try { await deleteDocument(id); } catch { reload(); }
+    try {
+      await deleteDocument(id);
+      toast('Document removed', 'success');
+    } catch {
+      toast('Failed to delete', 'error');
+      reload();
+    }
   }
 
   async function handleAdd(e) {
     e.preventDefault();
     if (!form.title.trim()) return;
-    await createDocument(form);
-    setForm({ title: '', description: '', category: 'other', tip: '' });
-    setShowAdd(false);
-    reload();
+    try {
+      await createDocument(form);
+      toast('Document added', 'success');
+      setForm({ title: '', description: '', category: 'other', tip: '' });
+      setShowAdd(false);
+      reload();
+    } catch {
+      toast('Failed to add document', 'error');
+    }
   }
 
   const filtered = filter === 'all' ? docs : docs.filter((d) => d.category === filter);

@@ -69,7 +69,6 @@ class BudgetLimit(Base):
     category = Column(String, nullable=False)
     amount = Column(Float, nullable=False)
 
-
 class UserProfile(Base):
     __tablename__ = "user_profiles"
 

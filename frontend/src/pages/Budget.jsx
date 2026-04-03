@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import HeroHeader from '../components/HeroHeader';
 import AddModal from '../components/AddModal';
+import { useToast } from '../components/Toast';
 import { getBudgetEntries, createBudgetEntry, deleteBudgetEntry, getBudgetLimits, setBudgetLimit } from '../api';
 
 const EXPENSE_CATEGORIES = [
@@ -49,6 +50,8 @@ export default function Budget() {
   const [showSetLimit, setShowSetLimit] = useState(null); // category string or null
   const [limitInput, setLimitInput] = useState('');
   const [form, setForm] = useState({ label: '', amount: '', entry_type: 'expense', category: 'groceries' });
+  const [submitting, setSubmitting] = useState(false);
+  const toast = useToast();
 
   const load = async () => {
     try {
@@ -88,30 +91,47 @@ export default function Budget() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!form.label.trim() || !form.amount) return;
-    await createBudgetEntry({
-      label: form.label,
-      amount: parseFloat(form.amount),
-      entry_type: form.entry_type,
-      category: form.category,
-    });
-    setForm({ label: '', amount: '', entry_type: 'expense', category: 'groceries' });
-    setShowAdd(false);
-    load();
+    if (!form.label.trim() || !form.amount || submitting) return;
+    setSubmitting(true);
+    try {
+      await createBudgetEntry({
+        label: form.label,
+        amount: parseFloat(form.amount),
+        entry_type: form.entry_type,
+        category: form.category,
+      });
+      toast(`${form.entry_type === 'expense' ? 'Expense' : 'Income'} added`, 'success');
+      setForm({ label: '', amount: '', entry_type: 'expense', category: 'groceries' });
+      setShowAdd(false);
+      load();
+    } catch {
+      toast('Failed to add transaction', 'error');
+    }
+    setSubmitting(false);
   };
 
   const handleDelete = async (id) => {
-    await deleteBudgetEntry(id);
-    load();
+    try {
+      await deleteBudgetEntry(id);
+      toast('Transaction deleted', 'success');
+      load();
+    } catch {
+      toast('Failed to delete', 'error');
+    }
   };
 
   const handleSetLimit = async () => {
     const val = parseFloat(limitInput);
     if (!val || val <= 0 || !showSetLimit) return;
-    await setBudgetLimit(showSetLimit, val);
-    setShowSetLimit(null);
-    setLimitInput('');
-    load();
+    try {
+      await setBudgetLimit(showSetLimit, val);
+      toast('Budget limit saved', 'success');
+      setShowSetLimit(null);
+      setLimitInput('');
+      load();
+    } catch {
+      toast('Failed to save limit', 'error');
+    }
   };
 
   const currentCategories = form.entry_type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
@@ -360,10 +380,10 @@ export default function Budget() {
 
           <button
             type="submit"
-            disabled={!form.label.trim() || !form.amount}
+            disabled={!form.label.trim() || !form.amount || submitting}
             className="w-full py-4 rounded-[14px] bg-ios-blue text-white text-base font-semibold tracking-tight mt-1 disabled:opacity-40"
           >
-            Add {form.entry_type === 'expense' ? 'Expense' : 'Income'}
+            {submitting ? 'Adding...' : `Add ${form.entry_type === 'expense' ? 'Expense' : 'Income'}`}
           </button>
         </form>
       </AddModal>

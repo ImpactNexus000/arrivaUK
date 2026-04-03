@@ -40,7 +40,7 @@ const features = [
     ),
   },
   {
-    label: 'Smart Reminders & Notifications',
+    label: 'Smart Reminders',
     desc: 'Never miss a deadline or appointment',
     color: 'bg-ios-red',
     icon: (
@@ -62,7 +62,7 @@ const features = [
   {
     label: 'Smart Checklist',
     desc: 'AI-powered personalised task management',
-    color: 'bg-[#5856D6]',
+    color: 'bg-ios-indigo',
     icon: (
       <svg className="w-6 h-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
@@ -76,23 +76,24 @@ export default function More() {
     <div className="pb-24">
       <div className="bg-white border-b border-black/[0.08] px-5 pb-4 pt-14">
         <h1 className="text-[26px] font-bold tracking-tight text-black">More</h1>
-        <p className="text-[14px] text-[#6b6b70] mt-1">Upcoming features</p>
+        <p className="text-[14px] text-[#6b6b70] mt-1">Features coming soon</p>
       </div>
 
       <div className="px-4 py-4 flex flex-col gap-2.5">
-        {features.map((item) => (
+        {features.map((item, idx) => (
           <div
             key={item.label}
-            className="bg-white rounded-[18px] border border-black/[0.08] p-4 flex items-center gap-3.5 shadow-sm opacity-75"
+            className="bg-white rounded-[18px] border border-black/[0.08] p-4 flex items-center gap-3.5"
+            style={{ animationDelay: `${idx * 50}ms` }}
           >
             <div className={`w-10 h-10 ${item.color} rounded-xl flex items-center justify-center flex-shrink-0`}>
               {item.icon}
             </div>
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <p className="text-[15px] font-semibold text-black">{item.label}</p>
               <p className="text-[12px] text-[#AEAEB2] mt-0.5">{item.desc}</p>
             </div>
-            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-[#F0F0F5] text-[#6b6b70] whitespace-nowrap">
+            <span className="text-[11px] font-semibold px-2.5 py-1 rounded-full bg-ios-blue/10 text-ios-blue whitespace-nowrap">
               Coming Soon
             </span>
           </div>

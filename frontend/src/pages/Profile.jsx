@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useToast } from '../components/Toast';
 import { getMe, updateProfile, getUploadUrl } from '../api';
 
 const STUDENT_LABELS = {
@@ -32,6 +33,7 @@ export default function Profile({ onLogout }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     getMe()
@@ -49,8 +51,9 @@ export default function Profile({ onLogout }) {
       fd.append('profile_picture', file);
       const updated = await updateProfile(fd);
       setUser(updated);
+      toast('Profile picture updated', 'success');
     } catch {
-      // silently fail
+      toast('Failed to upload picture', 'error');
     }
     setUploading(false);
   }

@@ -51,14 +51,14 @@ const tabs = [
 
 export default function TabBar() {
   return (
-    <div className="fixed bottom-0 left-0 right-0 flex border-t border-black/[0.08] bg-white/90 backdrop-blur-xl z-50">
+    <div className="fixed bottom-0 left-0 right-0 flex border-t border-black/[0.08] bg-white/90 backdrop-blur-xl z-50 pb-[env(safe-area-inset-bottom)] sm:max-w-[75%] sm:mx-auto">
       {tabs.map((tab) => (
         <NavLink
           key={tab.to}
           to={tab.to}
           end={tab.to === '/'}
           className={({ isActive }) =>
-            `flex-1 flex flex-col items-center gap-0.5 pt-2.5 pb-1 no-underline transition-colors ${
+            `flex-1 flex flex-col items-center gap-0.5 pt-2.5 pb-1.5 no-underline transition-colors active:opacity-60 ${
               isActive ? 'text-ios-blue' : 'text-[#AEAEB2]'
             }`
           }

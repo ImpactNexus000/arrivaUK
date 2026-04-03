@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import Badge from '../components/Badge';
 import AddModal from '../components/AddModal';
+import { useToast } from '../components/Toast';
 import { getPosts, createPost, updatePost, deletePost, likePost, replyToPost } from '../api';
 
 const CATEGORIES = ['All', 'Banks', 'NI Number', 'Shopping', 'Housing', 'Transport', 'General'];
@@ -48,6 +49,8 @@ export default function Community() {
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ content: '', category: '' });
   const [menuOpen, setMenuOpen] = useState(null);
+  const [submitting, setSubmitting] = useState(false);
+  const toast = useToast();
 
   const currentUserId = Number(localStorage.getItem('arrivauk_user_id'));
 
@@ -74,24 +77,35 @@ export default function Community() {
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    if (!form.content.trim()) return;
-    await createPost(form);
-    setForm({ content: '', category: 'general' });
-    setShowAdd(false);
-    load();
+    if (!form.content.trim() || submitting) return;
+    setSubmitting(true);
+    try {
+      await createPost(form);
+      toast('Post shared', 'success');
+      setForm({ content: '', category: 'general' });
+      setShowAdd(false);
+      load();
+    } catch {
+      toast('Failed to post', 'error');
+    }
+    setSubmitting(false);
   };
 
   const handleLike = async (postId) => {
-    await likePost(postId);
-    load();
+    try { await likePost(postId); load(); } catch {}
   };
 
   const handleReply = async (postId) => {
     if (!replyText.trim()) return;
-    await replyToPost(postId, { content: replyText });
-    setReplyText('');
-    setReplyingTo(null);
-    load();
+    try {
+      await replyToPost(postId, { content: replyText });
+      toast('Reply sent', 'success');
+      setReplyText('');
+      setReplyingTo(null);
+      load();
+    } catch {
+      toast('Failed to send reply', 'error');
+    }
   };
 
   const handleEdit = (post) => {
@@ -102,15 +116,25 @@ export default function Community() {
 
   const handleEditSave = async (postId) => {
     if (!editForm.content.trim()) return;
-    await updatePost(postId, editForm);
-    setEditingId(null);
-    load();
+    try {
+      await updatePost(postId, editForm);
+      toast('Post updated', 'success');
+      setEditingId(null);
+      load();
+    } catch {
+      toast('Failed to update', 'error');
+    }
   };
 
   const handleDelete = async (postId) => {
-    await deletePost(postId);
-    setMenuOpen(null);
-    load();
+    try {
+      await deletePost(postId);
+      toast('Post deleted', 'success');
+      setMenuOpen(null);
+      load();
+    } catch {
+      toast('Failed to delete', 'error');
+    }
   };
 
   const filtered = filter === 'All'
@@ -393,10 +417,10 @@ export default function Community() {
           </div>
           <button
             type="submit"
-            disabled={!form.content.trim()}
+            disabled={!form.content.trim() || submitting}
             className="w-full py-4 rounded-[14px] bg-ios-blue text-white text-base font-semibold tracking-tight mt-1 disabled:opacity-40"
           >
-            Post
+            {submitting ? 'Posting...' : 'Post'}
           </button>
         </form>
       </AddModal>

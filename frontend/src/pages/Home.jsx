@@ -70,7 +70,7 @@ const tiles = [
     to: '/budget',
     label: 'Budget',
     desc: 'Manage finances',
-    color: 'bg-[#FF9500]',
+    color: 'bg-ios-orange',
     icon: (
       <svg className="w-7 h-7 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -82,6 +82,7 @@ const tiles = [
 export default function Home() {
   const [user, setUser] = useState(null);
   const [stats, setStats] = useState({ checklist: 0, deals: 0, balance: 0 });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -89,24 +90,26 @@ export default function Home() {
         const profile = await getMe();
         setUser(profile);
         localStorage.setItem('arrivauk_user_name', profile.name);
-
-        const [items, deals, budget] = await Promise.all([
-          getChecklist(),
-          getDeals(),
-          getBudgetEntries(),
-        ]);
+      } catch {
+        // Auth failed
+      }
+      try {
+        const items = await getChecklist();
+        setStats((s) => ({ ...s, checklist: items.filter((i) => !i.completed).length }));
+      } catch {}
+      try {
+        const deals = await getDeals();
+        setStats((s) => ({ ...s, deals: deals.length }));
+      } catch {}
+      try {
+        const budget = await getBudgetEntries();
         const balance = budget.reduce(
           (sum, e) => sum + (e.entry_type === 'income' ? e.amount : -e.amount),
           0
         );
-        setStats({
-          checklist: items.filter((i) => !i.completed).length,
-          deals: deals.length,
-          balance,
-        });
-      } catch {
-        // API not available yet
-      }
+        setStats((s) => ({ ...s, balance }));
+      } catch {}
+      setLoading(false);
     }
     load();
   }, []);
@@ -118,6 +121,30 @@ export default function Home() {
   const subtitle = user
     ? ARRIVAL_LABELS[user.arrival_status] || user.university
     : 'Your UK arrival companion';
+
+  if (loading) {
+    return (
+      <div className="min-h-screen pb-24 flex flex-col">
+        <div className="bg-gradient-to-br from-[#0A2342] via-[#1a4a7a] to-[#1e5a96] px-5 pt-14 pb-6">
+          <div className="h-7 w-48 bg-white/15 rounded-lg animate-pulse" />
+          <div className="h-4 w-32 bg-white/10 rounded mt-2 animate-pulse" />
+          <div className="flex gap-3 mt-5">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="bg-white/10 rounded-xl h-16 flex-1 animate-pulse" />
+            ))}
+          </div>
+        </div>
+        <div className="px-4 py-4 flex-1">
+          <div className="h-4 w-24 bg-black/[0.06] rounded mb-3 animate-pulse" />
+          <div className="grid grid-cols-2 gap-2.5">
+            {[1, 2, 3, 4, 5, 6].map((i) => (
+              <div key={i} className="bg-white rounded-[18px] border border-black/[0.08] h-28 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-24 flex flex-col">
