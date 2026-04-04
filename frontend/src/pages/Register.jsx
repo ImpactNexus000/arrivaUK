@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { register, getUniversities, sendOtp, verifyOtp } from '../api';
+import AuthLayout from '../components/AuthLayout';
 
 const STUDENT_TYPES = [
   { value: 'international', label: 'International Student', desc: 'Non-EU/EEA country', icon: '🌍' },
@@ -237,18 +238,19 @@ export default function Register({ onAuth }) {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A2342] via-[#1a4a7a] to-[#1e5a96] flex flex-col relative overflow-hidden">
+    <AuthLayout>
+    <div className="min-h-screen bg-gradient-to-br from-[#0A2342] via-[#1a4a7a] to-[#1e5a96] lg:bg-ios-bg lg:from-ios-bg lg:via-ios-bg lg:to-ios-bg flex flex-col lg:justify-center relative overflow-hidden">
       {/* Decorative elements */}
-      <div className="absolute w-80 h-80 rounded-full border-[28px] border-white/[0.03] -top-24 -right-24" />
-      <div className="absolute w-48 h-48 rounded-full border-[18px] border-white/[0.03] bottom-40 -left-16" />
-      <div className="absolute w-24 h-24 rounded-full bg-ios-blue/10 top-1/3 right-8 blur-2xl" />
+      <div className="absolute w-80 h-80 rounded-full border-[28px] border-white/[0.03] -top-24 -right-24 lg:hidden" />
+      <div className="absolute w-48 h-48 rounded-full border-[18px] border-white/[0.03] bottom-40 -left-16 lg:hidden" />
+      <div className="absolute w-24 h-24 rounded-full bg-ios-blue/10 top-1/3 right-8 blur-2xl lg:hidden" />
 
       {/* Step progress bar */}
-      <div className="px-6 pt-14 pb-2 relative z-10">
+      <div className="px-6 lg:px-12 lg:max-w-[480px] lg:mx-auto lg:w-full pt-14 lg:pt-10 pb-2 relative z-10">
         <div className="flex items-center gap-1">
           {STEP_LABELS.map((label, i) => (
             <div key={label} className="flex-1 flex flex-col items-center gap-1.5">
-              <div className="w-full h-1 rounded-full overflow-hidden bg-white/10">
+              <div className="w-full h-1 lg:h-1.5 rounded-full overflow-hidden bg-white/10 lg:bg-black/[0.06]">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ease-out ${
                     i < step ? 'bg-ios-green w-full' : i === step ? 'bg-ios-blue w-full' : 'w-0'
@@ -256,23 +258,23 @@ export default function Register({ onAuth }) {
                   style={{ width: i <= step ? '100%' : '0%' }}
                 />
               </div>
-              <span className={`text-[10px] font-medium transition-colors duration-300 ${
-                i <= step ? 'text-white/70' : 'text-white/25'
+              <span className={`text-[10px] lg:text-[14px] font-medium transition-colors duration-300 ${
+                i <= step ? 'text-white/70 lg:text-[#6b6b70]' : 'text-white/25 lg:text-[#AEAEB2]'
               }`}>{label}</span>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex-1 flex flex-col px-5 relative z-10 overflow-y-auto">
+      <div className="flex-1 flex flex-col px-5 lg:flex-none lg:px-12 lg:max-w-[480px] lg:mx-auto lg:w-full relative z-10 overflow-y-auto">
         {/* Step 0: Email + Password */}
         {step === 0 && (
-          <div className="flex-1 flex flex-col animate-fade-in">
-            <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
+          <div className="flex-1 lg:flex-none flex flex-col animate-fade-in">
+            <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight mt-4">
               Create Your Account
             </h1>
-            <p className="text-[15px] text-white/60 mt-1.5 leading-relaxed">
-              Start your UK journey with ArriveUK
+            <p className="text-[15px] text-white/60 lg:text-[#6b6b70] mt-1.5 leading-relaxed">
+              Start your UK journey with ArrivaUK
             </p>
 
             {/* Email */}
@@ -282,7 +284,7 @@ export default function Register({ onAuth }) {
                 placeholder="Email address"
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] text-white placeholder-white/30 text-[16px] outline-none border border-white/[0.08] focus:border-white/25 backdrop-blur-sm transition-all"
+                className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] lg:bg-white text-white lg:text-black placeholder-white/30 lg:placeholder-[#AEAEB2] text-[16px] outline-none border border-white/[0.08] lg:border-black/[0.08] focus:border-white/25 lg:focus:border-ios-blue backdrop-blur-sm transition-all"
               />
               {form.email && (
                 <div className={`absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-all ${emailValid ? 'bg-ios-green' : 'bg-ios-red/60'}`}>
@@ -302,12 +304,12 @@ export default function Register({ onAuth }) {
                 placeholder="Password (min 6 characters)"
                 value={form.password}
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] text-white placeholder-white/30 text-[16px] outline-none border border-white/[0.08] focus:border-white/25 backdrop-blur-sm transition-all pr-12"
+                className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] lg:bg-white text-white lg:text-black placeholder-white/30 lg:placeholder-[#AEAEB2] text-[16px] outline-none border border-white/[0.08] lg:border-black/[0.08] focus:border-white/25 lg:focus:border-ios-blue backdrop-blur-sm transition-all pr-12"
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 lg:text-[#AEAEB2] hover:text-white/70 lg:hover:text-[#6b6b70] transition-colors"
               >
                 {showPassword ? (
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
@@ -341,7 +343,7 @@ export default function Register({ onAuth }) {
                 placeholder="Confirm password"
                 value={form.confirmPassword}
                 onChange={(e) => setForm({ ...form, confirmPassword: e.target.value })}
-                className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] text-white placeholder-white/30 text-[16px] outline-none border border-white/[0.08] focus:border-white/25 backdrop-blur-sm transition-all"
+                className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] lg:bg-white text-white lg:text-black placeholder-white/30 lg:placeholder-[#AEAEB2] text-[16px] outline-none border border-white/[0.08] lg:border-black/[0.08] focus:border-white/25 lg:focus:border-ios-blue backdrop-blur-sm transition-all"
               />
               {form.confirmPassword && (
                 <div className={`absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-all ${passwordsMatch ? 'bg-ios-green' : 'bg-ios-red/60'}`}>
@@ -358,7 +360,7 @@ export default function Register({ onAuth }) {
               <p className="mt-3 text-ios-red text-[13px] bg-ios-red/10 px-4 py-2.5 rounded-xl">{error}</p>
             )}
 
-            <p className="text-white/30 text-[13px] mt-5 text-center">
+            <p className="text-white/30 lg:text-[#AEAEB2] text-[13px] mt-5 text-center">
               Already have an account?{' '}
               <Link to="/login" className="text-ios-blue font-medium hover:underline">Sign in</Link>
             </p>
@@ -367,11 +369,11 @@ export default function Register({ onAuth }) {
 
         {/* Step 1: OTP Verification */}
         {step === 1 && (
-          <div className="flex-1 flex flex-col animate-fade-in">
-            <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
+          <div className="flex-1 lg:flex-none flex flex-col animate-fade-in">
+            <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight mt-4">
               Verify Your Email
             </h1>
-            <p className="text-[15px] text-white/60 mt-1.5 leading-relaxed">
+            <p className="text-[15px] text-white/60 lg:text-[#6b6b70] mt-1.5 leading-relaxed">
               We sent a 6-digit code to
             </p>
             <p className="text-[15px] text-ios-blue font-medium mt-0.5">{form.email}</p>
@@ -405,7 +407,7 @@ export default function Register({ onAuth }) {
                         digit
                           ? 'bg-white/[0.15] text-white border-ios-blue/60'
                           : 'bg-white/[0.08] text-white/80 border-white/[0.08]'
-                      } border focus:border-ios-blue/80 focus:bg-white/[0.12]`}
+                      } border focus:border-ios-blue/80 focus:bg-white/[0.12] lg:bg-white lg:text-black lg:border-black/[0.08] lg:focus:border-ios-blue lg:focus:bg-white`}
                       autoFocus={i === 0}
                     />
                   ))}
@@ -449,11 +451,11 @@ export default function Register({ onAuth }) {
 
         {/* Step 2: Name + Profile Picture */}
         {step === 2 && (
-          <div className="flex-1 flex flex-col animate-fade-in">
-            <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
+          <div className="flex-1 lg:flex-none flex flex-col animate-fade-in">
+            <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight mt-4">
               Your Profile
             </h1>
-            <p className="text-[15px] text-white/60 mt-1.5 leading-relaxed">
+            <p className="text-[15px] text-white/60 lg:text-[#6b6b70] mt-1.5 leading-relaxed">
               Add a photo and your name
             </p>
 
@@ -491,7 +493,7 @@ export default function Register({ onAuth }) {
                 />
               </button>
             </div>
-            <p className="text-center text-white/30 text-[12px] mt-2.5">Tap to add a photo (optional)</p>
+            <p className="text-center text-white/30 lg:text-[#AEAEB2] text-[12px] mt-2.5">Tap to add a photo (optional)</p>
 
             {/* Name input */}
             <div className="mt-7 relative">
@@ -500,7 +502,7 @@ export default function Register({ onAuth }) {
                 placeholder="Your full name"
                 value={form.name}
                 onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] text-white placeholder-white/30 text-[16px] outline-none border border-white/[0.08] focus:border-white/25 backdrop-blur-sm transition-all"
+                className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] lg:bg-white text-white lg:text-black placeholder-white/30 lg:placeholder-[#AEAEB2] text-[16px] outline-none border border-white/[0.08] lg:border-black/[0.08] focus:border-white/25 lg:focus:border-ios-blue backdrop-blur-sm transition-all"
               />
               {form.name.trim() && (
                 <div className="absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-ios-green flex items-center justify-center">
@@ -513,11 +515,11 @@ export default function Register({ onAuth }) {
 
         {/* Step 3: Student Type */}
         {step === 3 && (
-          <div className="flex-1 flex flex-col animate-fade-in">
-            <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
+          <div className="flex-1 lg:flex-none flex flex-col animate-fade-in">
+            <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight mt-4">
               Student Status
             </h1>
-            <p className="text-[15px] text-white/60 mt-1.5 leading-relaxed">
+            <p className="text-[15px] text-white/60 lg:text-[#6b6b70] mt-1.5 leading-relaxed">
               What type of student are you?
             </p>
 
@@ -528,14 +530,14 @@ export default function Register({ onAuth }) {
                   onClick={() => setForm({ ...form, student_type: type.value })}
                   className={`flex items-center gap-4 p-4.5 rounded-2xl border text-left transition-all duration-200 ${
                     form.student_type === type.value
-                      ? 'bg-white/[0.15] border-ios-blue/60 shadow-lg shadow-ios-blue/10'
-                      : 'bg-white/[0.06] border-white/[0.06] hover:bg-white/[0.1]'
+                      ? 'bg-white/[0.15] lg:bg-ios-blue/[0.06] border-ios-blue/60 shadow-lg shadow-ios-blue/10'
+                      : 'bg-white/[0.06] lg:bg-white border-white/[0.06] lg:border-black/[0.08] hover:bg-white/[0.1] lg:hover:bg-black/[0.02]'
                   }`}
                 >
                   <span className="text-3xl">{type.icon}</span>
                   <div className="flex-1">
-                    <p className="text-[15px] font-semibold text-white">{type.label}</p>
-                    <p className="text-[12px] text-white/40 mt-0.5">{type.desc}</p>
+                    <p className="text-[15px] font-semibold text-white lg:text-black">{type.label}</p>
+                    <p className="text-[12px] text-white/40 lg:text-[#AEAEB2] mt-0.5">{type.desc}</p>
                   </div>
                   {form.student_type === type.value && (
                     <div className="w-6 h-6 rounded-full bg-ios-blue flex items-center justify-center">
@@ -550,11 +552,11 @@ export default function Register({ onAuth }) {
 
         {/* Step 4: University */}
         {step === 4 && (
-          <div className="flex-1 flex flex-col animate-fade-in">
-            <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
+          <div className="flex-1 lg:flex-none flex flex-col animate-fade-in">
+            <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight mt-4">
               Your University
             </h1>
-            <p className="text-[15px] text-white/60 mt-1.5 leading-relaxed">
+            <p className="text-[15px] text-white/60 lg:text-[#6b6b70] mt-1.5 leading-relaxed">
               Which university are you attending?
             </p>
 
@@ -563,7 +565,7 @@ export default function Register({ onAuth }) {
               placeholder="Search universities..."
               value={uniSearch}
               onChange={(e) => setUniSearch(e.target.value)}
-              className="mt-6 w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] text-white placeholder-white/30 text-[16px] outline-none border border-white/[0.08] focus:border-white/25 backdrop-blur-sm transition-all"
+              className="mt-6 w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] lg:bg-white text-white lg:text-black placeholder-white/30 lg:placeholder-[#AEAEB2] text-[16px] outline-none border border-white/[0.08] lg:border-black/[0.08] focus:border-white/25 lg:focus:border-ios-blue backdrop-blur-sm transition-all"
             />
 
             <div className="mt-4 flex flex-col gap-1.5 overflow-y-auto max-h-[42vh] pr-1">
@@ -573,14 +575,14 @@ export default function Register({ onAuth }) {
                   onClick={() => setForm({ ...form, university: uni })}
                   className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all duration-200 ${
                     form.university === uni
-                      ? 'bg-white/[0.15] border border-ios-blue/60'
-                      : 'bg-white/[0.06] border border-white/[0.06] hover:bg-white/[0.1]'
+                      ? 'bg-white/[0.15] lg:bg-ios-blue/[0.06] border border-ios-blue/60'
+                      : 'bg-white/[0.06] lg:bg-white border border-white/[0.06] lg:border-black/[0.08] hover:bg-white/[0.1] lg:hover:bg-black/[0.02]'
                   }`}
                 >
-                  <div className="w-8 h-8 rounded-xl bg-white/[0.1] flex items-center justify-center flex-shrink-0">
+                  <div className="w-8 h-8 rounded-xl bg-white/[0.1] lg:bg-[#F2F2F7] flex items-center justify-center flex-shrink-0">
                     <span className="text-[14px]">🎓</span>
                   </div>
-                  <p className="text-[14px] font-medium text-white flex-1">{uni}</p>
+                  <p className="text-[14px] font-medium text-white lg:text-black flex-1">{uni}</p>
                   {form.university === uni && (
                     <div className="w-6 h-6 rounded-full bg-ios-blue flex items-center justify-center">
                       <svg className="w-3.5 h-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -594,11 +596,11 @@ export default function Register({ onAuth }) {
 
         {/* Step 5: Arrival Status */}
         {step === 5 && (
-          <div className="flex-1 flex flex-col animate-fade-in">
-            <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
+          <div className="flex-1 lg:flex-none flex flex-col animate-fade-in">
+            <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight mt-4">
               Your Arrival Status
             </h1>
-            <p className="text-[15px] text-white/60 mt-1.5 leading-relaxed">
+            <p className="text-[15px] text-white/60 lg:text-[#6b6b70] mt-1.5 leading-relaxed">
               Where are you in your journey to the UK?
             </p>
 
@@ -609,14 +611,14 @@ export default function Register({ onAuth }) {
                   onClick={() => setForm({ ...form, arrival_status: opt.value })}
                   className={`flex items-center gap-4 p-5 rounded-2xl border text-left transition-all duration-200 ${
                     form.arrival_status === opt.value
-                      ? 'bg-white/[0.15] border-ios-blue/60 shadow-lg shadow-ios-blue/10'
-                      : 'bg-white/[0.06] border-white/[0.06] hover:bg-white/[0.1]'
+                      ? 'bg-white/[0.15] lg:bg-ios-blue/[0.06] border-ios-blue/60 shadow-lg shadow-ios-blue/10'
+                      : 'bg-white/[0.06] lg:bg-white border-white/[0.06] lg:border-black/[0.08] hover:bg-white/[0.1] lg:hover:bg-black/[0.02]'
                   }`}
                 >
                   <span className="text-3xl">{opt.icon}</span>
                   <div className="flex-1">
-                    <p className="text-[16px] font-semibold text-white">{opt.label}</p>
-                    <p className="text-[13px] text-white/40 mt-0.5">{opt.desc}</p>
+                    <p className="text-[16px] font-semibold text-white lg:text-black">{opt.label}</p>
+                    <p className="text-[13px] text-white/40 lg:text-[#AEAEB2] mt-0.5">{opt.desc}</p>
                   </div>
                   {form.arrival_status === opt.value && (
                     <div className="w-6 h-6 rounded-full bg-ios-blue flex items-center justify-center">
@@ -634,11 +636,11 @@ export default function Register({ onAuth }) {
         )}
 
         {/* Bottom navigation */}
-        <div className="mt-auto pb-10 pt-4 flex gap-3">
+        <div className="mt-auto lg:mt-6 pb-10 lg:pb-6 pt-4 flex gap-3">
           {step > 0 && step !== 1 && (
             <button
               onClick={back}
-              className="px-6 py-4 rounded-2xl bg-white/[0.08] text-white text-base font-semibold hover:bg-white/[0.12] transition-colors"
+              className="px-6 py-4 rounded-2xl bg-white/[0.08] lg:bg-[#F2F2F7] text-white lg:text-black text-base font-semibold hover:bg-white/[0.12] lg:hover:bg-black/[0.08] transition-colors"
             >
               Back
             </button>
@@ -673,5 +675,6 @@ export default function Register({ onAuth }) {
         </div>
       </div>
     </div>
+    </AuthLayout>
   );
 }

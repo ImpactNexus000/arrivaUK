@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import HeroHeader from '../components/HeroHeader';
 import Badge from '../components/Badge';
 import { getDeals, seedDeals } from '../api';
 
@@ -45,24 +46,20 @@ export default function Deals() {
   };
 
   return (
-    <div className="pb-24">
-      {/* Header */}
-      <div className="bg-white border-b border-black/[0.08] px-5 pb-4 pt-14">
-        <h1 className="text-[26px] font-bold tracking-tight text-black">Student Deals</h1>
-        <p className="text-[14px] text-[#6b6b70] mt-1">
-          {deals.length} verified offers — save hundreds in your first month
-        </p>
+    <div className="pb-24 lg:pb-0">
+      <HeroHeader title="Student Deals" subtitle={`${deals.length} verified offers — save hundreds in your first month`} />
 
-        {/* Filter chips */}
-        <div className="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
+      {/* Filter chips */}
+      <div className="px-4 lg:px-10 pt-4 pb-1 overflow-x-auto">
+        <div className="flex gap-2 min-w-max">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => { setFilter(cat); setShowAll(false); }}
-              className={`px-4 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium whitespace-nowrap transition-all ${
                 filter === cat
-                  ? 'bg-ios-blue text-white'
-                  : 'bg-[#F2F2F7] text-black'
+                  ? 'bg-ios-blue text-white shadow-sm'
+                  : 'bg-white text-[#6b6b70] border border-black/[0.06]'
               }`}
             >
               {cat}
@@ -71,18 +68,20 @@ export default function Deals() {
         </div>
       </div>
 
-      <div className="px-4 py-4">
+      <div className="px-4 lg:px-10 py-4">
         {filtered.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-[15px] text-[#AEAEB2]">No deals found</p>
+            <p className="text-[28px] mb-3">🏷️</p>
+            <p className="text-[16px] font-semibold text-black">No deals found</p>
+            <p className="text-[14px] text-[#6b6b70] mt-1">Try a different category</p>
           </div>
         )}
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col lg:grid lg:grid-cols-3 gap-3 lg:gap-3.5">
           {filtered.map((deal) => (
             <div
               key={deal.id}
-              className="bg-white rounded-[18px] border border-black/[0.08] flex overflow-hidden"
+              className="bg-white rounded-[18px] border border-black/[0.08] flex overflow-hidden desktop-card-hover"
             >
               {/* Left accent bar */}
               <div className="w-1.5 bg-navy flex-shrink-0" />

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import HeroHeader from '../components/HeroHeader';
 import AddModal from '../components/AddModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useToast } from '../components/Toast';
 import { getBudgetEntries, createBudgetEntry, deleteBudgetEntry, getBudgetLimits, setBudgetLimit } from '../api';
 
@@ -51,6 +52,7 @@ export default function Budget() {
   const [limitInput, setLimitInput] = useState('');
   const [form, setForm] = useState({ label: '', amount: '', entry_type: 'expense', category: 'groceries' });
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const toast = useToast();
 
   const load = async () => {
@@ -137,7 +139,7 @@ export default function Budget() {
   const currentCategories = form.entry_type === 'expense' ? EXPENSE_CATEGORIES : INCOME_CATEGORIES;
 
   return (
-    <div className="pb-24">
+    <div className="pb-24 lg:pb-0">
       <HeroHeader title="Budget Tracker" subtitle="Track your monthly finances">
         {/* Summary cards */}
         <div className="flex gap-3 mt-2">
@@ -174,10 +176,10 @@ export default function Budget() {
         )}
       </HeroHeader>
 
-      <div className="px-4 py-4">
+      <div className="px-4 lg:px-10 py-4 lg:grid lg:grid-cols-2 lg:gap-6 lg:items-start">
         {/* Category Breakdown */}
         {sortedCategories.length > 0 && (
-          <>
+          <div>
             <p className="text-[13px] font-semibold text-[#6b6b70] uppercase tracking-wider px-1 pb-2">
               Spending by Category
             </p>
@@ -251,13 +253,13 @@ export default function Budget() {
                 Tap "Set limit" on any category to set a monthly budget
               </p>
             )}
-          </>
+          </div>
         )}
 
         {/* Recent Transactions */}
         {entries.length > 0 && (
-          <>
-            <p className="text-[13px] font-semibold text-[#6b6b70] uppercase tracking-wider px-1 pt-6 pb-2">
+          <div>
+            <p className="text-[13px] font-semibold text-[#6b6b70] uppercase tracking-wider px-1 pt-6 lg:pt-0 pb-2">
               Recent Transactions
             </p>
             <div className="bg-white rounded-2xl border border-black/[0.08] overflow-hidden">
@@ -280,7 +282,7 @@ export default function Budget() {
                       <p className={`text-[15px] font-semibold ${isExpense ? 'text-[#C0392B]' : 'text-[#1A7A3A]'}`}>
                         {isExpense ? '-' : '+'}£{entry.amount.toFixed(2)}
                       </p>
-                      <button onClick={() => handleDelete(entry.id)} className="ml-1 text-[#AEAEB2] active:text-ios-red">
+                      <button onClick={() => setConfirmDelete(entry.id)} className="ml-1 text-[#AEAEB2] active:text-ios-red">
                         <svg className="w-4.5 h-4.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                           <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
@@ -291,11 +293,11 @@ export default function Budget() {
                 );
               })}
             </div>
-          </>
+          </div>
         )}
 
         {entries.length === 0 && (
-          <div className="text-center py-16">
+          <div className="text-center py-16 lg:col-span-2">
             <p className="text-[28px] mb-3">💰</p>
             <p className="text-[16px] font-semibold text-black">No transactions yet</p>
             <p className="text-[14px] text-[#6b6b70] mt-1">Add your income and expenses to start tracking</p>
@@ -304,11 +306,19 @@ export default function Budget() {
 
         <button
           onClick={() => setShowAdd(true)}
-          className="w-full mt-4 py-4 rounded-[14px] bg-ios-blue text-white text-base font-semibold tracking-tight"
+          className="w-full lg:col-span-2 mt-4 py-4 rounded-[14px] bg-ios-blue text-white text-base font-semibold tracking-tight"
         >
           Add Transaction
         </button>
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => handleDelete(confirmDelete)}
+        title="Delete Transaction?"
+        message="This transaction will be permanently removed."
+      />
 
       {/* Add Transaction Modal */}
       <AddModal open={showAdd} onClose={() => setShowAdd(false)} title="New Transaction">

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { sendOtp, verifyOtp, resetPassword } from '../api';
+import AuthLayout from '../components/AuthLayout';
 
 const STRENGTH_COLORS = ['bg-red-400', 'bg-ios-red', 'bg-ios-orange', 'bg-yellow-400', 'bg-ios-green', 'bg-emerald-400'];
 const STRENGTH_LABELS = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
@@ -142,23 +143,24 @@ export default function ForgotPassword() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#0A2342] via-[#1a4a7a] to-[#1e5a96] flex flex-col relative overflow-hidden">
-      <div className="absolute w-80 h-80 rounded-full border-[28px] border-white/[0.03] -top-24 -right-24" />
-      <div className="absolute w-48 h-48 rounded-full border-[18px] border-white/[0.03] bottom-40 -left-16" />
+    <AuthLayout>
+    <div className="min-h-screen bg-gradient-to-br from-[#0A2342] via-[#1a4a7a] to-[#1e5a96] lg:bg-ios-bg lg:from-ios-bg lg:via-ios-bg lg:to-ios-bg flex flex-col relative overflow-hidden">
+      <div className="absolute w-80 h-80 rounded-full border-[28px] border-white/[0.03] -top-24 -right-24 lg:hidden" />
+      <div className="absolute w-48 h-48 rounded-full border-[18px] border-white/[0.03] bottom-40 -left-16 lg:hidden" />
 
-      <div className="flex-1 flex flex-col justify-center px-6 relative z-10">
+      <div className="flex-1 flex flex-col justify-center px-6 lg:px-12 lg:max-w-[480px] lg:mx-auto lg:w-full relative z-10">
 
         {/* Step 0: Enter email */}
         {step === 0 && (
           <div className="animate-fade-in">
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-white/[0.1] rounded-3xl flex items-center justify-center mx-auto mb-5 border border-white/[0.08]">
+              <div className="w-20 h-20 bg-white/[0.1] lg:bg-ios-blue/10 rounded-3xl flex items-center justify-center mx-auto mb-5 border border-white/[0.08] lg:border-ios-blue/20">
                 <svg className="w-10 h-10 text-ios-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z" />
                 </svg>
               </div>
-              <h1 className="text-[28px] font-bold text-white tracking-tight">Reset Password</h1>
-              <p className="text-[15px] text-white/50 mt-1.5">Enter your email to receive a verification code</p>
+              <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight">Reset Password</h1>
+              <p className="text-[15px] text-white/50 lg:text-[#6b6b70] mt-1.5">Enter your email to receive a verification code</p>
             </div>
 
             <input
@@ -166,7 +168,7 @@ export default function ForgotPassword() {
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] text-white placeholder-white/30 text-[16px] outline-none border border-white/[0.08] focus:border-white/25 backdrop-blur-sm transition-all"
+              className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] lg:bg-white text-white lg:text-black placeholder-white/30 lg:placeholder-[#AEAEB2] text-[16px] outline-none border border-white/[0.08] lg:border-black/[0.08] focus:border-white/25 lg:focus:border-ios-blue backdrop-blur-sm transition-all"
             />
 
             {error && (
@@ -189,7 +191,7 @@ export default function ForgotPassword() {
               ) : 'Send Verification Code'}
             </button>
 
-            <p className="text-white/30 text-[14px] mt-6 text-center">
+            <p className="text-white/30 lg:text-[#AEAEB2] text-[14px] mt-6 text-center">
               Remember your password?{' '}
               <Link to="/login" className="text-ios-blue font-medium hover:underline">Sign in</Link>
             </p>
@@ -200,13 +202,13 @@ export default function ForgotPassword() {
         {step === 1 && (
           <div className="animate-fade-in">
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-white/[0.1] rounded-3xl flex items-center justify-center mx-auto mb-5 border border-white/[0.08]">
+              <div className="w-20 h-20 bg-white/[0.1] lg:bg-ios-blue/10 rounded-3xl flex items-center justify-center mx-auto mb-5 border border-white/[0.08] lg:border-ios-blue/20">
                 <svg className="w-10 h-10 text-ios-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
                 </svg>
               </div>
-              <h1 className="text-[28px] font-bold text-white tracking-tight">Verify Your Email</h1>
-              <p className="text-[15px] text-white/50 mt-1.5">Enter the 6-digit code sent to</p>
+              <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight">Verify Your Email</h1>
+              <p className="text-[15px] text-white/50 lg:text-[#6b6b70] mt-1.5">Enter the 6-digit code sent to</p>
               <p className="text-[15px] text-ios-blue font-medium mt-0.5">{email}</p>
             </div>
 
@@ -237,7 +239,7 @@ export default function ForgotPassword() {
                         digit
                           ? 'bg-white/[0.15] text-white border-ios-blue/60'
                           : 'bg-white/[0.08] text-white/80 border-white/[0.08]'
-                      } border focus:border-ios-blue/80 focus:bg-white/[0.12]`}
+                      } border focus:border-ios-blue/80 focus:bg-white/[0.12] lg:bg-white lg:text-black lg:border-black/[0.08] lg:focus:border-ios-blue lg:focus:bg-white`}
                       autoFocus={i === 0}
                     />
                   ))}
@@ -277,7 +279,7 @@ export default function ForgotPassword() {
 
             <button
               onClick={() => { setStep(0); setError(''); setOtpDigits(['', '', '', '', '', '']); setOtpToken(''); }}
-              className="mt-6 text-white/30 text-[13px] text-center hover:text-white/50 transition-colors w-full"
+              className="mt-6 text-white/30 lg:text-[#AEAEB2] text-[13px] text-center hover:text-white/50 lg:hover:text-[#6b6b70] transition-colors w-full"
             >
               Use a different email
             </button>
@@ -288,13 +290,13 @@ export default function ForgotPassword() {
         {step === 2 && (
           <div className="animate-fade-in">
             <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-white/[0.1] rounded-3xl flex items-center justify-center mx-auto mb-5 border border-white/[0.08]">
+              <div className="w-20 h-20 bg-white/[0.1] lg:bg-ios-blue/10 rounded-3xl flex items-center justify-center mx-auto mb-5 border border-white/[0.08] lg:border-ios-blue/20">
                 <svg className="w-10 h-10 text-ios-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
                 </svg>
               </div>
-              <h1 className="text-[28px] font-bold text-white tracking-tight">New Password</h1>
-              <p className="text-[15px] text-white/50 mt-1.5">Choose a strong password for your account</p>
+              <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight">New Password</h1>
+              <p className="text-[15px] text-white/50 lg:text-[#6b6b70] mt-1.5">Choose a strong password for your account</p>
             </div>
 
             <form onSubmit={handleResetPassword} className="flex flex-col gap-3">
@@ -304,12 +306,12 @@ export default function ForgotPassword() {
                   placeholder="New password (min 6 characters)"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] text-white placeholder-white/30 text-[16px] outline-none border border-white/[0.08] focus:border-white/25 backdrop-blur-sm transition-all pr-12"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] lg:bg-white text-white lg:text-black placeholder-white/30 lg:placeholder-[#AEAEB2] text-[16px] outline-none border border-white/[0.08] lg:border-black/[0.08] focus:border-white/25 lg:focus:border-ios-blue backdrop-blur-sm transition-all pr-12"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 lg:text-[#AEAEB2] hover:text-white/70 lg:hover:text-[#6b6b70] transition-colors"
                 >
                   {showPassword ? (
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}><path strokeLinecap="round" strokeLinejoin="round" d="M3.98 8.223A10.477 10.477 0 001.934 12C3.226 16.338 7.244 19.5 12 19.5c.993 0 1.953-.138 2.863-.395M6.228 6.228A10.45 10.45 0 0112 4.5c4.756 0 8.773 3.162 10.065 7.498a10.523 10.523 0 01-4.293 5.774M6.228 6.228L3 3m3.228 3.228l3.65 3.65m7.894 7.894L21 21m-3.228-3.228l-3.65-3.65m0 0a3 3 0 10-4.243-4.243m4.242 4.242L9.88 9.88" /></svg>
@@ -341,7 +343,7 @@ export default function ForgotPassword() {
                   placeholder="Confirm new password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] text-white placeholder-white/30 text-[16px] outline-none border border-white/[0.08] focus:border-white/25 backdrop-blur-sm transition-all"
+                  className="w-full px-4 py-3.5 rounded-2xl bg-white/[0.08] lg:bg-white text-white lg:text-black placeholder-white/30 lg:placeholder-[#AEAEB2] text-[16px] outline-none border border-white/[0.08] lg:border-black/[0.08] focus:border-white/25 lg:focus:border-ios-blue backdrop-blur-sm transition-all"
                 />
                 {confirmPassword && (
                   <div className={`absolute right-3.5 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full flex items-center justify-center transition-all ${passwordsMatch ? 'bg-ios-green' : 'bg-ios-red/60'}`}>
@@ -385,8 +387,8 @@ export default function ForgotPassword() {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
-            <h1 className="text-[28px] font-bold text-white tracking-tight">Password Reset!</h1>
-            <p className="text-[15px] text-white/50 mt-1.5 mb-8">Your password has been updated successfully</p>
+            <h1 className="text-[28px] font-bold text-white lg:text-black tracking-tight">Password Reset!</h1>
+            <p className="text-[15px] text-white/50 lg:text-[#6b6b70] mt-1.5 mb-8">Your password has been updated successfully</p>
 
             <button
               onClick={() => navigate('/login')}
@@ -398,5 +400,6 @@ export default function ForgotPassword() {
         )}
       </div>
     </div>
+    </AuthLayout>
   );
 }

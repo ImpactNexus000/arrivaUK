@@ -116,7 +116,7 @@ export default function Home() {
 
   const greeting = user
     ? `Welcome, ${user.name}!`
-    : 'Welcome to ArriveUK';
+    : 'Welcome to ArrivaUK';
 
   const subtitle = user
     ? ARRIVAL_LABELS[user.arrival_status] || user.university
@@ -124,8 +124,8 @@ export default function Home() {
 
   if (loading) {
     return (
-      <div className="min-h-screen pb-24 flex flex-col">
-        <div className="bg-gradient-to-br from-[#0A2342] via-[#1a4a7a] to-[#1e5a96] px-5 pt-14 pb-6">
+      <div className="min-h-screen pb-24 lg:pb-0 flex flex-col">
+        <div className="bg-gradient-to-br from-[#0A2342] via-[#1a4a7a] to-[#1e5a96] px-5 pt-14 pb-6 lg:px-10 lg:pt-10">
           <div className="h-7 w-48 bg-white/15 rounded-lg animate-pulse" />
           <div className="h-4 w-32 bg-white/10 rounded mt-2 animate-pulse" />
           <div className="flex gap-3 mt-5">
@@ -134,9 +134,9 @@ export default function Home() {
             ))}
           </div>
         </div>
-        <div className="px-4 py-4 flex-1">
+        <div className="px-4 py-4 lg:px-10 flex-1">
           <div className="h-4 w-24 bg-black/[0.06] rounded mb-3 animate-pulse" />
-          <div className="grid grid-cols-2 gap-2.5">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 lg:gap-3.5">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div key={i} className="bg-white rounded-[18px] border border-black/[0.08] h-28 animate-pulse" />
             ))}
@@ -147,7 +147,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen pb-24 flex flex-col">
+    <div className="min-h-screen pb-24 lg:pb-0 flex flex-col">
       <HeroHeader title={greeting} subtitle={subtitle}>
         {user && (
           <div className="flex items-center justify-between mt-1">
@@ -165,7 +165,7 @@ export default function Home() {
             </Link>
           </div>
         )}
-        <div className="flex gap-3 mt-3">
+        <div className="flex gap-3 mt-3 lg:mt-4 flex-wrap">
           <div className="bg-white/15 rounded-xl px-4 py-2 text-center flex-1">
             <p className="text-[20px] font-bold text-white">{stats.checklist}</p>
             <p className="text-[11px] text-white/60">Tasks left</p>
@@ -183,22 +183,23 @@ export default function Home() {
         </div>
       </HeroHeader>
 
-      <div className="px-4 py-4 flex-1 flex flex-col">
+      <div className="px-4 py-4 lg:px-10 lg:py-7 flex-1 flex flex-col">
         <p className="text-[13px] font-semibold text-[#6b6b70] uppercase tracking-wider px-1 pt-2 pb-2">
           Quick Access
         </p>
-        <div className="grid grid-cols-2 gap-2.5 flex-1">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 lg:gap-3.5 flex-1">
           {tiles.map((tile) => (
             <Link
               key={tile.label}
               to={tile.to}
-              className="bg-white rounded-[18px] border border-black/[0.08] p-4 shadow-sm no-underline flex flex-col justify-center"
+              className="bg-white rounded-[18px] border border-black/[0.08] p-4 lg:p-5 shadow-sm no-underline flex flex-col justify-center desktop-card-hover"
             >
-              <div className={`w-10 h-10 ${tile.color} rounded-xl flex items-center justify-center mb-2.5`}>
+              <div className={`w-10 h-10 lg:w-12 lg:h-12 ${tile.color} rounded-xl lg:rounded-[14px] flex items-center justify-center mb-2.5`}>
                 {tile.icon}
               </div>
               <p className="text-[15px] font-semibold text-black">{tile.label}</p>
               <p className="text-[12px] text-[#AEAEB2] mt-0.5">{tile.desc}</p>
+              <p className="hidden lg:block text-[12px] text-ios-blue font-semibold mt-2">Open &rarr;</p>
             </Link>
           ))}
         </div>

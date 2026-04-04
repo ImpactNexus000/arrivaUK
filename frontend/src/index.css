@@ -50,14 +50,25 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Desktop layout */
+/* Mobile-first: full screen */
 .app-shell {
   min-height: 100dvh;
 }
 
-@media (min-width: 640px) {
+/* Desktop: sidebar layout — no phone frame */
+@media (min-width: 1024px) {
   .app-shell {
-    max-width: 75%;
-    margin: 0 auto;
+    min-height: 100vh;
+  }
+}
+
+/* Desktop card hover effect */
+@media (min-width: 1024px) {
+  .desktop-card-hover {
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .desktop-card-hover:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.09);
   }
 }

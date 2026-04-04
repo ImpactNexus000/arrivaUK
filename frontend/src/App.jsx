@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import TabBar from './components/TabBar';
+import Sidebar from './components/Sidebar';
 import Home from './pages/Home';
 import Checklist from './pages/Checklist';
 import Deals from './pages/Deals';
@@ -33,19 +34,22 @@ export default function App() {
   }
 
   return (
-    <div className="app-shell bg-ios-bg font-sans">
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/checklist" element={<Checklist />} />
-        <Route path="/deals" element={<Deals />} />
-        <Route path="/budget" element={<Budget />} />
-        <Route path="/community" element={<Community />} />
-        <Route path="/guide" element={<LocalGuide />} />
-        <Route path="/documents" element={<Documents />} />
-        <Route path="/more" element={<More />} />
-        <Route path="/profile" element={<Profile onLogout={() => setAuthed(false)} />} />
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+    <div className="app-shell bg-ios-bg font-sans lg:flex lg:h-screen lg:overflow-hidden">
+      <Sidebar />
+      <main className="flex-1 lg:overflow-y-auto">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/checklist" element={<Checklist />} />
+          <Route path="/deals" element={<Deals />} />
+          <Route path="/budget" element={<Budget />} />
+          <Route path="/community" element={<Community />} />
+          <Route path="/guide" element={<LocalGuide />} />
+          <Route path="/documents" element={<Documents />} />
+          <Route path="/more" element={<More />} />
+          <Route path="/profile" element={<Profile onLogout={() => setAuthed(false)} />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </main>
       <TabBar />
     </div>
   );

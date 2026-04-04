@@ -40,7 +40,7 @@ export function ToastProvider({ children }) {
       {children}
       {toast && (
         <div
-          className={`fixed top-12 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg transition-all duration-300 max-w-[400px] ${COLORS[toast.type]} ${
+          className={`fixed top-12 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2.5 px-4 py-3 rounded-2xl shadow-lg transition-all duration-300 max-w-[380px] ${COLORS[toast.type]} ${
             visible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-2'
           }`}
         >

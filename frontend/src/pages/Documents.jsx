@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import HeroHeader from '../components/HeroHeader';
 import AddModal from '../components/AddModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useToast } from '../components/Toast';
 import { getDocuments, seedDocuments, updateDocumentStatus, createDocument, deleteDocument } from '../api';
 
@@ -27,6 +28,7 @@ export default function Documents() {
   const [expandedId, setExpandedId] = useState(null);
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', category: 'other', tip: '' });
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const toast = useToast();
 
   useEffect(() => {
@@ -103,7 +105,7 @@ export default function Documents() {
   }
 
   return (
-    <div className="pb-24">
+    <div className="pb-24 lg:pb-0">
       <HeroHeader title="Documents" subtitle={`${readyCount} of ${total} documents ready`}>
         <div className="mt-2.5">
           <div className="flex items-center justify-between mb-1.5">
@@ -133,7 +135,7 @@ export default function Documents() {
       </HeroHeader>
 
       {/* Category filter */}
-      <div className="px-4 pt-4 pb-1 overflow-x-auto">
+      <div className="px-4 lg:px-10 pt-4 pb-1 overflow-x-auto">
         <div className="flex gap-2 min-w-max">
           {CATEGORIES.map((cat) => {
             const active = filter === cat.key;
@@ -157,10 +159,12 @@ export default function Documents() {
       </div>
 
       {/* Document list */}
-      <div className="px-4 py-3 flex flex-col gap-2.5">
+      <div className="px-4 lg:px-10 py-3 flex flex-col lg:grid lg:grid-cols-2 gap-2.5 lg:gap-3.5 lg:items-start">
         {filtered.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-[15px] text-[#AEAEB2]">No documents in this category</p>
+          <div className="text-center py-16 lg:col-span-2">
+            <p className="text-[28px] mb-3">📄</p>
+            <p className="text-[16px] font-semibold text-black">No documents here</p>
+            <p className="text-[14px] text-[#6b6b70] mt-1">No documents in this category</p>
           </div>
         )}
 
@@ -250,7 +254,7 @@ export default function Documents() {
                   {/* Delete for custom docs */}
                   {!doc.is_default && (
                     <button
-                      onClick={() => handleDelete(doc.id)}
+                      onClick={() => setConfirmDelete(doc.id)}
                       className="mt-3 w-full py-2 rounded-xl text-[13px] font-medium text-ios-red bg-ios-red/[0.06] hover:bg-ios-red/10 transition-colors"
                     >
                       Remove Document
@@ -265,7 +269,7 @@ export default function Documents() {
         {/* Add custom document */}
         <button
           onClick={() => setShowAdd(true)}
-          className="w-full py-3.5 rounded-2xl bg-white border border-dashed border-black/[0.12] text-ios-blue text-[15px] font-medium flex items-center justify-center gap-2 hover:bg-ios-blue/[0.03] transition-colors"
+          className="w-full lg:col-span-2 py-3.5 rounded-2xl bg-white border border-dashed border-black/[0.12] text-ios-blue text-[15px] font-medium flex items-center justify-center gap-2 hover:bg-ios-blue/[0.03] transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -273,6 +277,14 @@ export default function Documents() {
           Add Custom Document
         </button>
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => handleDelete(confirmDelete)}
+        title="Remove Document?"
+        message="This document will be permanently removed."
+      />
 
       {/* Add modal */}
       <AddModal open={showAdd} onClose={() => setShowAdd(false)} title="Add Document">

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
+import HeroHeader from '../components/HeroHeader';
 import Badge from '../components/Badge';
 import AddModal from '../components/AddModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useToast } from '../components/Toast';
 import { getPosts, createPost, updatePost, deletePost, likePost, replyToPost } from '../api';
 
@@ -50,6 +52,7 @@ export default function Community() {
   const [editForm, setEditForm] = useState({ content: '', category: '' });
   const [menuOpen, setMenuOpen] = useState(null);
   const [submitting, setSubmitting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const toast = useToast();
 
   const currentUserId = Number(localStorage.getItem('arrivauk_user_id'));
@@ -144,23 +147,20 @@ export default function Community() {
   const isOwner = (post) => post.user_id && post.user_id === currentUserId;
 
   return (
-    <div className="pb-24">
-      {/* Header */}
-      <div className="bg-white border-b border-black/[0.08] px-5 pb-4 pt-14">
-        <h1 className="text-[26px] font-bold tracking-tight text-black">Community</h1>
-        <p className="text-[14px] text-[#6b6b70] mt-1">
-          {total} {total === 1 ? 'tip' : 'tips'} shared by students
-        </p>
+    <div className="pb-24 lg:pb-0">
+      <HeroHeader title="Community" subtitle={`${total} ${total === 1 ? 'tip' : 'tips'} shared by students`} />
 
-        <div className="flex gap-2 mt-4 overflow-x-auto no-scrollbar">
+      {/* Filter chips */}
+      <div className="px-4 lg:px-10 pt-4 pb-1 overflow-x-auto">
+        <div className="flex gap-2 min-w-max">
           {CATEGORIES.map((cat) => (
             <button
               key={cat}
               onClick={() => setFilter(cat)}
-              className={`px-4 py-1.5 rounded-full text-[13px] font-semibold whitespace-nowrap transition-colors ${
+              className={`px-3.5 py-1.5 rounded-full text-[13px] font-medium whitespace-nowrap transition-all ${
                 filter === cat
-                  ? 'bg-ios-blue text-white'
-                  : 'bg-[#F2F2F7] text-black'
+                  ? 'bg-ios-blue text-white shadow-sm'
+                  : 'bg-white text-[#6b6b70] border border-black/[0.06]'
               }`}
             >
               {cat}
@@ -169,14 +169,16 @@ export default function Community() {
         </div>
       </div>
 
-      <div className="px-4 py-4">
+      <div className="px-4 lg:px-10 py-4">
         {filtered.length === 0 && (
           <div className="text-center py-16">
-            <p className="text-[15px] text-[#AEAEB2]">No posts yet. Be the first to share!</p>
+            <p className="text-[28px] mb-3">💬</p>
+            <p className="text-[16px] font-semibold text-black">No posts yet</p>
+            <p className="text-[14px] text-[#6b6b70] mt-1">Be the first to share a tip!</p>
           </div>
         )}
 
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-3 lg:gap-3.5">
           {filtered.map((post) => (
             <div
               key={post.id}
@@ -227,7 +229,7 @@ export default function Community() {
                             </button>
                             <div className="h-px bg-black/[0.06]" />
                             <button
-                              onClick={() => handleDelete(post.id)}
+                              onClick={() => { setConfirmDelete(post.id); setMenuOpen(null); }}
                               className="w-full px-4 py-2.5 text-left text-[14px] text-ios-red hover:bg-ios-red/[0.04] flex items-center gap-2.5"
                             >
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -384,11 +386,19 @@ export default function Community() {
 
         <button
           onClick={() => setShowAdd(true)}
-          className="w-full mt-3 py-4 rounded-[14px] bg-ios-blue text-white text-base font-semibold tracking-tight"
+          className="w-full lg:col-span-2 mt-3 py-4 rounded-[14px] bg-ios-blue text-white text-base font-semibold tracking-tight"
         >
           Share a Tip
         </button>
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => handleDelete(confirmDelete)}
+        title="Delete Post?"
+        message="This action cannot be undone."
+      />
 
       <AddModal open={showAdd} onClose={() => setShowAdd(false)} title="Share with the Community">
         <form onSubmit={handleAdd} className="flex flex-col gap-3">

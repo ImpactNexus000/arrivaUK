@@ -1,3 +1,5 @@
+import HeroHeader from '../components/HeroHeader';
+
 const features = [
   {
     label: 'Accommodation',
@@ -73,13 +75,10 @@ const features = [
 
 export default function More() {
   return (
-    <div className="pb-24">
-      <div className="bg-white border-b border-black/[0.08] px-5 pb-4 pt-14">
-        <h1 className="text-[26px] font-bold tracking-tight text-black">More</h1>
-        <p className="text-[14px] text-[#6b6b70] mt-1">Features coming soon</p>
-      </div>
+    <div className="pb-24 lg:pb-0">
+      <HeroHeader title="More" subtitle="Features coming soon" />
 
-      <div className="px-4 py-4 flex flex-col gap-2.5">
+      <div className="px-4 lg:px-10 py-4 flex flex-col lg:grid lg:grid-cols-2 gap-2.5 lg:gap-3.5">
         {features.map((item, idx) => (
           <div
             key={item.label}

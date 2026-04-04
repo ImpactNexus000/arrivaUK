@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import HeroHeader from '../components/HeroHeader';
 import Badge from '../components/Badge';
 import AddModal from '../components/AddModal';
+import ConfirmDialog from '../components/ConfirmDialog';
 import { useToast } from '../components/Toast';
 import { getChecklist, seedChecklist, createChecklistItem, toggleComplete, deleteChecklistItem } from '../api';
 
@@ -43,6 +44,7 @@ export default function Checklist() {
   const [collapsed, setCollapsed] = useState({});
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ title: '', description: '', category: 'essentials', urgency: 'first_week' });
+  const [confirmDelete, setConfirmDelete] = useState(null);
   const toast = useToast();
 
   async function load() {
@@ -125,7 +127,7 @@ export default function Checklist() {
   }
 
   return (
-    <div className="pb-24">
+    <div className="pb-24 lg:pb-0">
       <HeroHeader title="Arrival Checklist" subtitle={`${completedCount} of ${total} tasks completed`}>
         <div className="mt-2.5">
           <div className="flex items-center justify-between mb-1.5">
@@ -142,7 +144,7 @@ export default function Checklist() {
       </HeroHeader>
 
       {/* Category filter chips */}
-      <div className="px-4 pt-4 pb-1 overflow-x-auto">
+      <div className="px-4 lg:px-10 pt-4 pb-1 overflow-x-auto">
         <div className="flex gap-2 min-w-max">
           {CATEGORIES.map((cat) => {
             const active = filter === cat.key;
@@ -166,7 +168,7 @@ export default function Checklist() {
       </div>
 
       {/* Urgency sections */}
-      <div className="px-4 py-3 flex flex-col gap-4">
+      <div className="px-4 lg:px-10 py-3 flex flex-col lg:grid lg:grid-cols-2 gap-4 lg:gap-6 lg:items-start">
         {URGENCY_SECTIONS.map((section) => {
           const sectionItems = filtered.filter((i) => i.urgency === section.key);
           if (sectionItems.length === 0) return null;
@@ -257,7 +259,7 @@ export default function Checklist() {
                           </Badge>
                           {!item.is_default && (
                             <button
-                              onClick={() => handleDelete(item.id)}
+                              onClick={() => setConfirmDelete(item.id)}
                               className="w-6 h-6 flex items-center justify-center text-[#AEAEB2] hover:text-ios-red transition-colors"
                             >
                               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
@@ -278,15 +280,17 @@ export default function Checklist() {
 
         {/* Empty state for filtered view */}
         {filtered.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-[15px] text-[#AEAEB2]">No tasks in this category</p>
+          <div className="text-center py-16 lg:col-span-2">
+            <p className="text-[28px] mb-3">📋</p>
+            <p className="text-[16px] font-semibold text-black">No tasks here</p>
+            <p className="text-[14px] text-[#6b6b70] mt-1">No tasks in this category</p>
           </div>
         )}
 
         {/* Add custom task */}
         <button
           onClick={() => setShowAdd(true)}
-          className="w-full py-3.5 rounded-2xl bg-white border border-dashed border-black/[0.12] text-ios-blue text-[15px] font-medium flex items-center justify-center gap-2 hover:bg-ios-blue/[0.03] transition-colors"
+          className="w-full lg:col-span-2 py-3.5 rounded-2xl bg-white border border-dashed border-black/[0.12] text-ios-blue text-[15px] font-medium flex items-center justify-center gap-2 hover:bg-ios-blue/[0.03] transition-colors"
         >
           <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -294,6 +298,14 @@ export default function Checklist() {
           Add Custom Task
         </button>
       </div>
+
+      <ConfirmDialog
+        open={!!confirmDelete}
+        onClose={() => setConfirmDelete(null)}
+        onConfirm={() => handleDelete(confirmDelete)}
+        title="Delete Task?"
+        message="This custom task will be permanently removed."
+      />
 
       {/* Add modal */}
       <AddModal open={showAdd} onClose={() => setShowAdd(false)} title="Add Custom Task">

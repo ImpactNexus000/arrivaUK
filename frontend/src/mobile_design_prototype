@@ -1,0 +1,963 @@
+import { useState, useEffect } from "react";
+
+/* ─── iOS Design Tokens ─── */
+const ios = {
+  blue:    "#007AFF",
+  green:   "#34C759",
+  red:     "#FF3B30",
+  orange:  "#FF9500",
+  yellow:  "#FFCC00",
+  teal:    "#5AC8FA",
+  indigo:  "#5856D6",
+  pink:    "#FF2D55",
+  bg:      "#F2F2F7",
+  bg2:     "#FFFFFF",
+  bg3:     "#F2F2F7",
+  label:   "#000000",
+  label2:  "#3C3C43",
+  label3:  "#6b6b70",
+  label4:  "#AEAEB2",
+  sep:     "rgba(60,60,67,0.12)",
+  navy:    "#0A2342",
+  navyMid: "#1a4a7a",
+};
+
+/* ─── Shared Components ─── */
+
+function StatusBar() {
+  return (
+    <div style={{
+      height: 44, display: "flex", alignItems: "flex-end", justifyContent: "space-between",
+      padding: "0 20px 8px", flexShrink: 0, position: "relative", zIndex: 10,
+    }}>
+      <span style={{ fontSize: 15, fontWeight: 600, letterSpacing: -0.3 }}>9:41</span>
+      <div style={{ position: "absolute", left: "50%", transform: "translateX(-50%)", bottom: 6 }}>
+        <div style={{
+          width: 120, height: 34, background: "#000", borderRadius: 20,
+          display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}>
+          <div style={{ width: 10, height: 10, borderRadius: "50%", background: "#1a1a1a", border: "1px solid #333" }} />
+          <div style={{ width: 46, height: 8, borderRadius: 4, background: "#1a1a1a" }} />
+        </div>
+      </div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+        <svg width="17" height="12" viewBox="0 0 17 12" fill="currentColor">
+          <rect x="0" y="3" width="3" height="9" rx="1" opacity="0.3"/>
+          <rect x="4.5" y="2" width="3" height="10" rx="1" opacity="0.5"/>
+          <rect x="9" y="1" width="3" height="11" rx="1" opacity="0.7"/>
+          <rect x="13.5" y="0" width="3" height="12" rx="1"/>
+        </svg>
+        <svg width="16" height="12" viewBox="0 0 16 12" fill="currentColor">
+          <path d="M8 2.4C10.5 2.4 12.7 3.4 14.3 5L15.5 3.7C13.6 1.9 11 0.8 8 0.8C5 0.8 2.4 1.9 0.5 3.7L1.7 5C3.3 3.4 5.5 2.4 8 2.4Z" opacity="0.3"/>
+          <path d="M8 5.2C9.7 5.2 11.2 5.9 12.3 7L13.5 5.7C12.1 4.3 10.2 3.5 8 3.5C5.8 3.5 3.9 4.3 2.5 5.7L3.7 7C4.8 5.9 6.3 5.2 8 5.2Z" opacity="0.6"/>
+          <path d="M8 8C9 8 9.9 8.4 10.6 9.1L8 12L5.4 9.1C6.1 8.4 7 8 8 8Z"/>
+        </svg>
+        <svg width="25" height="12" viewBox="0 0 25 12" fill="currentColor">
+          <rect x="0" y="1" width="21" height="10" rx="3" stroke="currentColor" strokeWidth="1" fill="none" opacity="0.35"/>
+          <rect x="22" y="4" width="3" height="4" rx="1.5" opacity="0.4"/>
+          <rect x="1.5" y="2.5" width="16" height="7" rx="2"/>
+        </svg>
+      </div>
+    </div>
+  );
+}
+
+function HomeIndicator() {
+  return (
+    <div style={{ height: 34, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+      <div style={{ width: 134, height: 5, borderRadius: 3, background: "rgba(0,0,0,0.18)" }} />
+    </div>
+  );
+}
+
+function TabBar({ active, onNav }) {
+  const tabs = [
+    { id: "home", label: "Home", icon: (on) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill={on ? ios.blue : "none"} stroke={on ? ios.blue : ios.label3} strokeWidth="1.6">
+        <path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z" strokeLinejoin="round"/>
+      </svg>
+    )},
+    { id: "checklist", label: "Tasks", icon: (on) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={on ? ios.blue : ios.label3} strokeWidth="1.6">
+        <path d="M9 11l3 3L22 4" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" strokeLinecap="round"/>
+      </svg>
+    )},
+    { id: "deals", label: "Deals", icon: (on) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill={on ? ios.blue : "none"} stroke={on ? ios.blue : ios.label3} strokeWidth="1.6">
+        <path d="M12.5 2l2.79 5.65 6.21.9-4.5 4.38 1.06 6.19L12.5 16.2l-5.56 2.92 1.06-6.19-4.5-4.38 6.21-.9L12.5 2z" strokeLinejoin="round"/>
+      </svg>
+    )},
+    { id: "community", label: "Community", icon: (on) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={on ? ios.blue : ios.label3} strokeWidth="1.6">
+        <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" strokeLinecap="round"/>
+        <circle cx="9" cy="7" r="4"/>
+        <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75" strokeLinecap="round"/>
+      </svg>
+    )},
+    { id: "budget", label: "Budget", icon: (on) => (
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={on ? ios.blue : ios.label3} strokeWidth="1.6">
+        <rect x="2" y="7" width="20" height="14" rx="2"/>
+        <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" strokeLinecap="round"/>
+      </svg>
+    )},
+  ];
+
+  return (
+    <div style={{
+      display: "flex", background: "rgba(249,249,249,0.94)",
+      backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+      borderTop: `0.5px solid ${ios.sep}`, flexShrink: 0,
+    }}>
+      {tabs.map(t => (
+        <button key={t.id} onClick={() => onNav(t.id)} style={{
+          flex: 1, display: "flex", flexDirection: "column", alignItems: "center",
+          gap: 3, padding: "10px 0 4px", border: "none", background: "transparent", cursor: "pointer",
+        }}>
+          {t.icon(active === t.id)}
+          <span style={{
+            fontSize: 10, fontWeight: active === t.id ? 600 : 400,
+            color: active === t.id ? ios.blue : ios.label3, letterSpacing: -0.1,
+          }}>{t.label}</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function Badge({ label, color }) {
+  const map = {
+    green:  { bg: "#E8F9EE", text: "#1A7A3A" },
+    red:    { bg: "#FFEAEA", text: "#C0392B" },
+    orange: { bg: "#FFF3E0", text: "#B95C00" },
+    blue:   { bg: "#E5F0FF", text: "#1558B0" },
+    purple: { bg: "#EEE9FF", text: "#4A35B0" },
+    gray:   { bg: "#F0F0F5", text: "#6b6b70" },
+  };
+  const s = map[color] || map.gray;
+  return (
+    <span style={{
+      fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 20,
+      background: s.bg, color: s.text, whiteSpace: "nowrap",
+    }}>{label}</span>
+  );
+}
+
+/* ─── Screen 1: Onboarding ─── */
+function OnboardScreen({ onDone }) {
+  const [step, setStep] = useState(0);
+  const [sel, setSel] = useState([null, null, null]);
+
+  const steps = [
+    {
+      q: "What's your student status?",
+      hint: "We'll show you the right visa & NI info",
+      opts: ["🌍  International (non-EU)", "🇪🇺  EU / EEA student", "🇬🇧  UK home student"],
+    },
+    {
+      q: "Which university?",
+      hint: "We'll tailor deals & local tips to your campus",
+      opts: ["🎓  University of Hertfordshire", "🏛️  UCL / King's / Imperial", "📚  Other UK university"],
+    },
+    {
+      q: "When did you arrive?",
+      hint: "We'll prioritise your checklist based on this",
+      opts: ["✈️  Haven't arrived yet", "📅  Just arrived (this week)", "🏠  Been here a while"],
+    },
+  ];
+
+  const pick = (i) => {
+    const n = [...sel]; n[step] = i; setSel(n);
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: ios.navy }}>
+      <StatusBar />
+      {/* Hero */}
+      <div style={{
+        display: "flex", flexDirection: "column", alignItems: "center",
+        padding: "12px 24px 28px", position: "relative", overflow: "hidden",
+      }}>
+        {/* Decorative circles */}
+        {[200, 140, 90].map((s, i) => (
+          <div key={i} style={{
+            position: "absolute", width: s, height: s, borderRadius: "50%",
+            border: `${20 - i * 5}px solid rgba(255,255,255,${0.04 + i * 0.01})`,
+            top: -s * 0.4, right: -s * 0.3,
+          }} />
+        ))}
+        <div style={{
+          width: 72, height: 72, borderRadius: 22, background: "rgba(255,255,255,0.12)",
+          display: "flex", alignItems: "center", justifyContent: "center",
+          fontSize: 38, marginBottom: 12, backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.15)",
+        }}>🇬🇧</div>
+        <div style={{
+          fontFamily: "'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif",
+          fontSize: 28, fontWeight: 700, color: "#fff", letterSpacing: -0.8,
+        }}>ArriveUK</div>
+        <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 4, letterSpacing: 0.2 }}>
+          Your UK student companion
+        </div>
+      </div>
+
+      {/* Card */}
+      <div style={{
+        flex: 1, background: ios.bg, borderRadius: "28px 28px 0 0",
+        display: "flex", flexDirection: "column", overflow: "hidden",
+      }}>
+        {/* Progress dots */}
+        <div style={{ display: "flex", gap: 6, justifyContent: "center", padding: "20px 0 4px" }}>
+          {steps.map((_, i) => (
+            <div key={i} style={{
+              width: i === step ? 20 : 6, height: 6, borderRadius: 3,
+              background: i === step ? ios.blue : ios.sep,
+              transition: "all 0.3s ease",
+            }} />
+          ))}
+        </div>
+
+        <div style={{ flex: 1, overflow: "hidden", padding: "16px 20px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 700, color: ios.label, letterSpacing: -0.5, lineHeight: 1.25 }}>
+              {steps[step].q}
+            </div>
+            <div style={{ fontSize: 14, color: ios.label3, marginTop: 5 }}>{steps[step].hint}</div>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+            {steps[step].opts.map((o, i) => (
+              <button key={i} onClick={() => pick(i)} style={{
+                padding: "14px 16px", borderRadius: 14,
+                border: sel[step] === i ? `2px solid ${ios.blue}` : `1.5px solid ${ios.sep}`,
+                background: sel[step] === i ? "#E5F0FF" : ios.bg2,
+                color: sel[step] === i ? ios.blue : ios.label,
+                fontSize: 15, fontWeight: sel[step] === i ? 600 : 400,
+                textAlign: "left", cursor: "pointer",
+                display: "flex", alignItems: "center", gap: 10,
+                transition: "all 0.15s",
+              }}>{o}</button>
+            ))}
+          </div>
+          <button onClick={() => step < 2 ? setStep(step + 1) : onDone()} style={{
+            marginTop: "auto", padding: "16px", borderRadius: 14,
+            background: sel[step] !== null ? ios.blue : ios.label4,
+            color: "#fff", fontSize: 16, fontWeight: 600, border: "none",
+            cursor: sel[step] !== null ? "pointer" : "default",
+            transition: "background 0.2s", letterSpacing: -0.2,
+          }}>
+            {step < 2 ? "Continue" : "Let's go 🚀"}
+          </button>
+        </div>
+      </div>
+      <HomeIndicator />
+    </div>
+  );
+}
+
+/* ─── Screen 2: Home ─── */
+function HomeScreen({ onNav }) {
+  const cards = [
+    { id: "checklist", icon: "✅", title: "Checklist",   sub: "2 of 6 done",           color: "#E5F0FF" },
+    { id: "deals",     icon: "🏷️", title: "Deals",       sub: "6 offers near you",     color: "#FFF3E0" },
+    { id: "budget",    icon: "💷", title: "Budget",      sub: "£245 left this month",  color: "#E8F9EE" },
+    { id: "docs",      icon: "📂", title: "Documents",   sub: "2 docs still needed",   color: "#F3EEFF" },
+    { id: "community", icon: "💬", title: "Community",   sub: "4 new posts today",     color: "#FFF0F3" },
+    { id: "local",     icon: "📍", title: "Local Guide", sub: "Near UoH, Hatfield",    color: "#E0F7FF" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: ios.bg }}>
+      <div style={{
+        background: "linear-gradient(160deg, #0A2342 0%, #1a4a7a 60%, #1e5a96 100%)",
+        flexShrink: 0,
+      }}>
+        <StatusBar />
+        <div style={{ padding: "4px 20px 28px", position: "relative", overflow: "hidden" }}>
+          {[180, 120].map((s, i) => (
+            <div key={i} style={{
+              position: "absolute", width: s, height: s, borderRadius: "50%",
+              border: `18px solid rgba(255,255,255,${0.05 + i * 0.02})`,
+              top: -s * 0.3, right: -s * 0.2,
+            }} />
+          ))}
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontWeight: 500, letterSpacing: 0.3 }}>
+            UNIVERSITY OF HERTFORDSHIRE
+          </div>
+          <div style={{ fontSize: 26, fontWeight: 700, color: "#fff", marginTop: 4, letterSpacing: -0.6, lineHeight: 1.2 }}>
+            Welcome, Chigboo 👋
+          </div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.55)", marginTop: 3 }}>
+            International student · Day 3 in the UK
+          </div>
+          <div style={{ display: "flex", gap: 8, marginTop: 14, flexWrap: "wrap" }}>
+            {["2/6 tasks done", "6 deals nearby", "£245 left"].map(p => (
+              <span key={p} style={{
+                padding: "5px 12px", borderRadius: 20,
+                background: "rgba(255,255,255,0.13)", backdropFilter: "blur(8px)",
+                fontSize: 12, color: "rgba(255,255,255,0.85)", fontWeight: 500,
+                border: "1px solid rgba(255,255,255,0.12)",
+              }}>{p}</span>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+        {/* Alert */}
+        <div style={{
+          background: "#FFF8E6", borderRadius: 14, padding: "12px 14px",
+          display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 16,
+          border: "1px solid rgba(255,196,0,0.3)",
+        }}>
+          <span style={{ fontSize: 18, flexShrink: 0 }}>⚠️</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#7A4800" }}>Action needed</div>
+            <div style={{ fontSize: 12, color: "#92400e", marginTop: 2, lineHeight: 1.5 }}>
+              Apply for your NI Number within 3 months of arrival — required to work in the UK.
+            </div>
+          </div>
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 600, color: ios.label3, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 10 }}>
+          Quick Access
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+          {cards.map(c => (
+            <button key={c.id} onClick={() => onNav(c.id)} style={{
+              background: ios.bg2, borderRadius: 18, padding: "16px",
+              border: `0.5px solid ${ios.sep}`, textAlign: "left",
+              cursor: "pointer", display: "flex", flexDirection: "column", gap: 6,
+              boxShadow: "0 1px 4px rgba(0,0,0,0.05)",
+              transition: "transform 0.1s",
+            }}>
+              <div style={{
+                width: 40, height: 40, borderRadius: 12, background: c.color,
+                display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20,
+              }}>{c.icon}</div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: ios.label }}>{c.title}</div>
+              <div style={{ fontSize: 11, color: ios.label3, lineHeight: 1.3 }}>{c.sub}</div>
+              <div style={{ fontSize: 11, color: ios.blue, fontWeight: 600 }}>Open →</div>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 3: Checklist ─── */
+function ChecklistScreen() {
+  const [items, setItems] = useState([
+    { id: 1, title: "Get a UK SIM card", hint: "Giffgaff, Smarty or Lebara — all student-friendly", badge: "done",   done: true,  group: "Essentials" },
+    { id: 2, title: "Open a UK bank account", hint: "Monzo or Starling — no UK address needed", badge: "done",   done: true,  group: "Essentials" },
+    { id: 3, title: "Apply for NI Number", hint: "Required before you can legally work in the UK", badge: "urgent", done: false, group: "Essentials" },
+    { id: 4, title: "Register with a GP", hint: "Free NHS healthcare as an international student", badge: "soon",  done: false, group: "Admin" },
+    { id: 5, title: "Get a 16-25 Railcard", hint: "Saves 1/3 on all UK train fares", badge: "soon",  done: false, group: "Admin" },
+    { id: 6, title: "Register to vote", hint: "Builds UK credit history too", badge: null,  done: false, group: "Admin" },
+  ]);
+
+  const toggle = (id) => setItems(items.map(i => i.id === id ? { ...i, done: !i.done } : i));
+  const done = items.filter(i => i.done).length;
+  const pct = Math.round(done / items.length * 100);
+  const groups = ["Essentials", "Admin"];
+
+  const badgeColor = { urgent: "red", soon: "orange", done: "green" };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: ios.bg }}>
+      <div style={{ background: ios.navy, flexShrink: 0 }}>
+        <StatusBar />
+        <div style={{ padding: "4px 20px 20px" }}>
+          <div style={{ fontSize: 26, fontWeight: 700, color: "#fff", letterSpacing: -0.6 }}>Arrival Checklist</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 3 }}>
+            {done} of {items.length} completed
+          </div>
+          {/* Progress bar */}
+          <div style={{ marginTop: 14, height: 6, background: "rgba(255,255,255,0.15)", borderRadius: 6, overflow: "hidden" }}>
+            <div style={{
+              height: "100%", width: `${pct}%`, borderRadius: 6,
+              background: "linear-gradient(90deg, #34C759, #30D158)",
+              transition: "width 0.4s ease",
+            }} />
+          </div>
+          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.4)", marginTop: 5 }}>{pct}% complete</div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+        {groups.map(group => (
+          <div key={group} style={{ marginBottom: 8 }}>
+            <div style={{ fontSize: 13, fontWeight: 600, color: ios.label3, letterSpacing: 0.3, textTransform: "uppercase", padding: "8px 4px 8px" }}>
+              {group}
+            </div>
+            <div style={{
+              background: ios.bg2, borderRadius: 16, overflow: "hidden",
+              border: `0.5px solid ${ios.sep}`,
+            }}>
+              {items.filter(i => i.group === group).map((item, idx, arr) => (
+                <div key={item.id}>
+                  <div onClick={() => toggle(item.id)} style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "14px 16px", cursor: "pointer",
+                    background: item.done ? "rgba(52,199,89,0.06)" : ios.bg2,
+                    transition: "background 0.15s",
+                  }}>
+                    {/* Checkbox */}
+                    <div style={{
+                      width: 24, height: 24, borderRadius: 12, flexShrink: 0,
+                      border: item.done ? "none" : `2px solid ${ios.label4}`,
+                      background: item.done ? ios.green : "transparent",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.2s",
+                    }}>
+                      {item.done && <svg width="13" height="10" viewBox="0 0 13 10" fill="none">
+                        <path d="M1.5 5L5 8.5L11.5 1.5" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{
+                        fontSize: 15, fontWeight: 500, color: item.done ? ios.label3 : ios.label,
+                        textDecoration: item.done ? "line-through" : "none",
+                        textDecorationColor: ios.label4,
+                        letterSpacing: -0.2,
+                      }}>{item.title}</div>
+                      <div style={{ fontSize: 12, color: ios.label4, marginTop: 2, lineHeight: 1.4 }}>{item.hint}</div>
+                    </div>
+                    {item.badge && !item.done && (
+                      <Badge label={item.badge === "urgent" ? "Urgent" : "Soon"} color={badgeColor[item.badge]} />
+                    )}
+                    {item.done && <Badge label="Done" color="green" />}
+                  </div>
+                  {idx < arr.length - 1 && <div style={{ height: "0.5px", background: ios.sep, marginLeft: 52 }} />}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 4: Deals ─── */
+function DealsScreen() {
+  const [activeFilter, setActiveFilter] = useState("All");
+  const filters = ["All", "Food", "Tech", "Travel", "Health", "Shopping"];
+  const deals = [
+    { name: "UNIDAYS", cat: "Platform", disc: "Free", desc: "100s of discounts — Nike, Apple, ASOS with your .ac.uk email.", accent: ios.navy,  discColor: "blue"   },
+    { name: "Spotify Premium", cat: "Music", disc: "50% off", desc: "£5.99/month with a valid university email. Cancel anytime.", accent: "#1DB954", discColor: "green" },
+    { name: "Amazon Prime Student", cat: "Shopping", disc: "6 mo free", desc: "Free next-day delivery + Prime Video, then 50% off forever.", accent: "#FF9900", discColor: "orange" },
+    { name: "National Express", cat: "Travel", disc: "30% off", desc: "Student coachcard gives 30% off coaches across the whole UK.", accent: ios.indigo, discColor: "purple" },
+    { name: "McDonald's", cat: "Food", disc: "20% off", desc: "Show your student ID at any participating UK McDonald's.", accent: ios.red,   discColor: "red"   },
+    { name: "Apple Education Store", cat: "Tech", disc: "Up to £200", desc: "Mac, iPad discounts + free AirPods for students.", accent: ios.label2, discColor: "gray" },
+    { name: "Headspace", cat: "Health", disc: "85% off", desc: "Mental health & meditation for £9.99/year instead of £69.99.", accent: "#FF6E5B", discColor: "red" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: ios.bg }}>
+      <div style={{ background: ios.bg2, flexShrink: 0, borderBottom: `0.5px solid ${ios.sep}` }}>
+        <StatusBar />
+        <div style={{ padding: "4px 20px 0" }}>
+          <div style={{ fontSize: 26, fontWeight: 700, color: ios.label, letterSpacing: -0.6 }}>Student Deals</div>
+          <div style={{ fontSize: 14, color: ios.label3, marginTop: 2 }}>Verified offers for UK students</div>
+        </div>
+        <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 20px 14px", scrollbarWidth: "none" }}>
+          {filters.map(f => (
+            <button key={f} onClick={() => setActiveFilter(f)} style={{
+              padding: "7px 16px", borderRadius: 20, border: "none", flexShrink: 0,
+              background: activeFilter === f ? ios.blue : ios.bg3,
+              color: activeFilter === f ? "#fff" : ios.label,
+              fontSize: 13, fontWeight: activeFilter === f ? 600 : 400, cursor: "pointer",
+              transition: "all 0.15s",
+            }}>{f}</button>
+          ))}
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px" }}>
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+          {deals.map((d, i) => (
+            <div key={i} style={{
+              background: ios.bg2, borderRadius: 18, overflow: "hidden",
+              border: `0.5px solid ${ios.sep}`,
+              boxShadow: "0 1px 6px rgba(0,0,0,0.05)",
+              display: "flex",
+            }}>
+              <div style={{ width: 5, background: d.accent, flexShrink: 0 }} />
+              <div style={{ padding: "14px 14px", flex: 1 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10 }}>
+                  <div>
+                    <div style={{ fontSize: 15, fontWeight: 600, color: ios.label, letterSpacing: -0.2 }}>{d.name}</div>
+                    <div style={{ fontSize: 11, color: ios.label4, fontWeight: 500, textTransform: "uppercase", letterSpacing: 0.5, marginTop: 1 }}>{d.cat}</div>
+                  </div>
+                  <Badge label={d.disc} color={d.discColor} />
+                </div>
+                <div style={{ fontSize: 13, color: ios.label3, marginTop: 8, lineHeight: 1.5 }}>{d.desc}</div>
+                <div style={{ marginTop: 10 }}>
+                  <span style={{ fontSize: 13, color: ios.blue, fontWeight: 600 }}>Claim offer →</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 5: Budget ─── */
+function BudgetScreen() {
+  const categories = [
+    { label: "Rent", icon: "🏠", amount: 380, total: 380, color: ios.navy },
+    { label: "Groceries", icon: "🛒", amount: 87.40, total: 200, color: ios.green },
+    { label: "Transport", icon: "🚌", amount: 54.90, total: 100, color: ios.orange },
+    { label: "Study materials", icon: "📚", amount: 38, total: 100, color: ios.indigo },
+    { label: "Eating out", icon: "🍔", amount: 42, total: 80, color: ios.red },
+  ];
+  const txns = [
+    { name: "Tesco Metro", date: "Today, 2:14 PM", amt: -22.40, cat: "🛒" },
+    { name: "Oyster card top-up", date: "Today, 9:05 AM", amt: -10.00, cat: "🚌" },
+    { name: "Amazon textbook", date: "Yesterday", amt: -18.00, cat: "📚" },
+    { name: "Maintenance loan", date: "Mar 1", amt: 847.50, cat: "💷" },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: ios.bg }}>
+      <div style={{
+        background: "linear-gradient(160deg, #0A2342 0%, #1a4a7a 70%)",
+        flexShrink: 0,
+      }}>
+        <StatusBar />
+        <div style={{ padding: "4px 20px 24px" }}>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.45)", fontWeight: 500, letterSpacing: 0.2 }}>
+            March 2026 · Monthly budget
+          </div>
+          <div style={{ fontSize: 38, fontWeight: 700, color: "#fff", marginTop: 4, letterSpacing: -1 }}>
+            £847.50
+          </div>
+          <div style={{ display: "flex", gap: 24, marginTop: 10 }}>
+            {[["Spent", "£602.30", "#fff"], ["Remaining", "£245.20", "#34C759"], ["Days left", "5", "#fff"]].map(([l, v, c]) => (
+              <div key={l}>
+                <div style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", textTransform: "uppercase", letterSpacing: 0.8 }}>{l}</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: c, marginTop: 1 }}>{v}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "14px 16px" }}>
+        <div style={{ fontSize: 13, fontWeight: 600, color: ios.label3, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 10 }}>
+          Spending breakdown
+        </div>
+        <div style={{ background: ios.bg2, borderRadius: 18, overflow: "hidden", border: `0.5px solid ${ios.sep}`, marginBottom: 20 }}>
+          {categories.map((c, i) => (
+            <div key={c.label}>
+              <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10, background: c.color + "18",
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0,
+                }}>{c.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: ios.label }}>{c.label}</span>
+                    <span style={{ fontSize: 14, fontWeight: 600, color: ios.label }}>£{c.amount.toFixed(2)}</span>
+                  </div>
+                  <div style={{ height: 5, background: ios.bg3, borderRadius: 4, overflow: "hidden" }}>
+                    <div style={{
+                      height: "100%", width: `${Math.min(100, c.amount / c.total * 100)}%`,
+                      background: c.color, borderRadius: 4,
+                    }} />
+                  </div>
+                </div>
+              </div>
+              {i < categories.length - 1 && <div style={{ height: "0.5px", background: ios.sep, marginLeft: 64 }} />}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 600, color: ios.label3, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 10 }}>
+          Recent transactions
+        </div>
+        <div style={{ background: ios.bg2, borderRadius: 18, overflow: "hidden", border: `0.5px solid ${ios.sep}`, marginBottom: 16 }}>
+          {txns.map((t, i) => (
+            <div key={t.name}>
+              <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 12 }}>
+                <div style={{
+                  width: 36, height: 36, borderRadius: 10, background: t.amt > 0 ? "#E8F9EE" : "#F5F5F5",
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 17, flexShrink: 0,
+                }}>{t.cat}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 500, color: ios.label }}>{t.name}</div>
+                  <div style={{ fontSize: 12, color: ios.label4, marginTop: 1 }}>{t.date}</div>
+                </div>
+                <span style={{ fontSize: 15, fontWeight: 600, color: t.amt > 0 ? ios.green : ios.label }}>
+                  {t.amt > 0 ? "+" : ""}£{Math.abs(t.amt).toFixed(2)}
+                </span>
+              </div>
+              {i < txns.length - 1 && <div style={{ height: "0.5px", background: ios.sep, marginLeft: 64 }} />}
+            </div>
+          ))}
+        </div>
+
+        <button style={{
+          width: "100%", padding: "15px", borderRadius: 14,
+          background: ios.blue, color: "#fff", border: "none",
+          fontSize: 16, fontWeight: 600, cursor: "pointer", letterSpacing: -0.2,
+        }}>+ Add transaction</button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 6: Documents ─── */
+function DocsScreen() {
+  const uploaded = [
+    { name: "Passport", meta: "Uploaded 2 days ago · PDF", icon: "🛂", status: "Verified", sc: "green" },
+    { name: "BRP Card", meta: "Uploaded yesterday · Image", icon: "📋", status: "Verified", sc: "green" },
+    { name: "CAS Letter", meta: "Uploaded 3 days ago · PDF", icon: "🎓", status: "Verified", sc: "green" },
+  ];
+  const needed = [
+    { name: "Bank statement", meta: "Required for tenancy & NI Number", icon: "🏦", status: "Missing", sc: "red" },
+    { name: "NHS registration", meta: "Needed for healthcare access", icon: "🏥", status: "Pending", sc: "orange" },
+    { name: "Council tax exemption", meta: "Students are exempt — get the letter", icon: "🏛️", status: "Missing", sc: "red" },
+  ];
+
+  const DocRow = ({ d, last }) => (
+    <>
+      <div style={{ padding: "13px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+        <div style={{
+          width: 40, height: 40, borderRadius: 12, background: ios.bg3,
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0,
+        }}>{d.icon}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 15, fontWeight: 500, color: ios.label }}>{d.name}</div>
+          <div style={{ fontSize: 12, color: ios.label4, marginTop: 1 }}>{d.meta}</div>
+        </div>
+        <Badge label={d.status} color={d.sc} />
+      </div>
+      {!last && <div style={{ height: "0.5px", background: ios.sep, marginLeft: 68 }} />}
+    </>
+  );
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: ios.bg }}>
+      <div style={{ background: ios.bg2, flexShrink: 0, borderBottom: `0.5px solid ${ios.sep}` }}>
+        <StatusBar />
+        <div style={{ padding: "4px 20px 16px" }}>
+          <div style={{ fontSize: 26, fontWeight: 700, color: ios.label, letterSpacing: -0.6 }}>Documents</div>
+          <div style={{ fontSize: 14, color: ios.label3, marginTop: 2 }}>Secure vault for your files</div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "16px" }}>
+        {/* Summary cards */}
+        <div style={{ display: "flex", gap: 10, marginBottom: 20 }}>
+          {[["3", "Uploaded", ios.green], ["2", "Missing", ios.red], ["1", "Pending", ios.orange]].map(([n, l, c]) => (
+            <div key={l} style={{
+              flex: 1, background: ios.bg2, borderRadius: 14, padding: "14px 12px",
+              border: `0.5px solid ${ios.sep}`, textAlign: "center",
+            }}>
+              <div style={{ fontSize: 24, fontWeight: 700, color: c }}>{n}</div>
+              <div style={{ fontSize: 11, color: ios.label3, marginTop: 2 }}>{l}</div>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 600, color: ios.label3, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 10 }}>
+          Uploaded
+        </div>
+        <div style={{ background: ios.bg2, borderRadius: 18, overflow: "hidden", border: `0.5px solid ${ios.sep}`, marginBottom: 20 }}>
+          {uploaded.map((d, i) => <DocRow key={d.name} d={d} last={i === uploaded.length - 1} />)}
+        </div>
+
+        <div style={{ fontSize: 13, fontWeight: 600, color: ios.label3, letterSpacing: 0.3, textTransform: "uppercase", marginBottom: 10 }}>
+          Still needed
+        </div>
+        <div style={{ background: ios.bg2, borderRadius: 18, overflow: "hidden", border: `0.5px solid ${ios.sep}`, marginBottom: 20 }}>
+          {needed.map((d, i) => <DocRow key={d.name} d={d} last={i === needed.length - 1} />)}
+        </div>
+
+        <button style={{
+          width: "100%", padding: "15px", borderRadius: 14,
+          background: "transparent", color: ios.blue,
+          border: `1.5px dashed ${ios.blue}`, fontSize: 15, fontWeight: 600,
+          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+        }}>＋ Upload a document</button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 7: Community ─── */
+function CommunityScreen() {
+  const posts = [
+    { initials: "AO", name: "Amara O.", uni: "UoH · MSc Biomedical Science", tag: "Bank", tagColor: "blue",   av: "#E5F0FF", avText: "#1558B0",
+      text: "Monzo opened my account in 10 minutes with just a passport photo. Don't waste time queueing at Barclays — I waited 3 weeks for absolutely nothing.", likes: 47, replies: 8 },
+    { initials: "KN", name: "Kwame N.", uni: "UCL · MSc Computer Science", tag: "NI Number", tagColor: "orange", av: "#FFF3E0", avText: "#B95C00",
+      text: "NI Number took 3 weeks after I applied online at gov.uk. You get a letter in the post. Don't pay anyone to do this for you — it is 100% free.", likes: 91, replies: 14 },
+    { initials: "FI", name: "Fatima I.", uni: "UoH · BSc Pharmacy", tag: "Food", tagColor: "red", av: "#FFF0F3", avText: "#C0392B",
+      text: "Aldi and Lidl are your best friends. I spend around £25/week. Check the yellow sticker section in Tesco after 8pm for heavily reduced items!", likes: 124, replies: 22 },
+    { initials: "OB", name: "Olumide B.", uni: "King's College · MEng", tag: "Housing", tagColor: "purple", av: "#EEE9FF", avText: "#4A35B0",
+      text: "SpareRoom is better than Rightmove for students. Also check your uni's Facebook housing group — I got a room for £650/month in London this way.", likes: 76, replies: 11 },
+  ];
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: ios.bg }}>
+      <div style={{ background: ios.bg2, flexShrink: 0, borderBottom: `0.5px solid ${ios.sep}` }}>
+        <StatusBar />
+        <div style={{ padding: "4px 20px 16px" }}>
+          <div style={{ fontSize: 26, fontWeight: 700, color: ios.label, letterSpacing: -0.6 }}>Community</div>
+          <div style={{ fontSize: 14, color: ios.label3, marginTop: 2 }}>Tips from students who've been there</div>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "12px 16px", display: "flex", flexDirection: "column", gap: 12 }}>
+        {posts.map((p, i) => (
+          <div key={i} style={{
+            background: ios.bg2, borderRadius: 18, padding: "14px 16px",
+            border: `0.5px solid ${ios.sep}`, boxShadow: "0 1px 6px rgba(0,0,0,0.04)",
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
+              <div style={{
+                width: 36, height: 36, borderRadius: 12, background: p.av, flexShrink: 0,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: 13, fontWeight: 700, color: p.avText,
+              }}>{p.initials}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: ios.label }}>{p.name}</div>
+                <div style={{ fontSize: 11, color: ios.label4 }}>{p.uni}</div>
+              </div>
+              <Badge label={p.tag} color={p.tagColor} />
+            </div>
+            <div style={{ fontSize: 14, color: ios.label2, lineHeight: 1.55 }}>{p.text}</div>
+            <div style={{ display: "flex", gap: 16, marginTop: 12, paddingTop: 10, borderTop: `0.5px solid ${ios.sep}` }}>
+              {[["👍", p.likes], ["💬", `${p.replies} replies`]].map(([ic, v]) => (
+                <button key={ic} style={{
+                  display: "flex", alignItems: "center", gap: 5, border: "none",
+                  background: "transparent", fontSize: 13, color: ios.label3, cursor: "pointer", padding: 0,
+                }}>{ic} {v}</button>
+              ))}
+              <button style={{ marginLeft: "auto", border: "none", background: "transparent", fontSize: 13, fontWeight: 600, color: ios.blue, cursor: "pointer", padding: 0 }}>Save</button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{
+        padding: "10px 16px 12px", background: "rgba(249,249,249,0.94)",
+        backdropFilter: "blur(20px)", borderTop: `0.5px solid ${ios.sep}`,
+        display: "flex", gap: 10, alignItems: "center", flexShrink: 0,
+      }}>
+        <div style={{
+          width: 32, height: 32, borderRadius: 10, background: "#E5F0FF",
+          display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, flexShrink: 0,
+        }}>CB</div>
+        <input placeholder="Share a tip with other students…" style={{
+          flex: 1, border: `1px solid ${ios.sep}`, borderRadius: 20, padding: "9px 14px",
+          fontSize: 14, outline: "none", background: ios.bg2, color: ios.label,
+          fontFamily: "inherit",
+        }} />
+        <button style={{
+          width: 34, height: 34, borderRadius: 17, background: ios.blue, border: "none",
+          display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0,
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Screen 8: Local Guide ─── */
+function LocalScreen() {
+  const [activePin, setActivePin] = useState("All");
+  const pins = ["All", "🏥 GP", "🛒 Food", "🍽️ Eat", "💊 Pharmacy", "🚌 Bus"];
+  const places = [
+    { icon: "🏥", name: "Hatfield Health Centre", dist: "0.4 mi", meta: "NHS GP surgery · Open 8am–6pm", rating: "4.2", cat: "🏥 GP", bg: "#E5F0FF" },
+    { icon: "🛒", name: "Aldi Hatfield", dist: "0.6 mi", meta: "Cheapest weekly shop in the area", rating: "4.4", cat: "🛒 Food", bg: "#E8F9EE" },
+    { icon: "🛒", name: "Tesco Extra Hatfield", dist: "0.8 mi", meta: "Open 24hrs · Student meal deals", rating: "4.1", cat: "🛒 Food", bg: "#E8F9EE" },
+    { icon: "🍽️", name: "Nando's, The Galleria", dist: "1.1 mi", meta: "Student discount available", rating: "4.3", cat: "🍽️ Eat", bg: "#FFF3E0" },
+    { icon: "💊", name: "Boots Pharmacy", dist: "0.5 mi", meta: "Prescription pickup · Student card", rating: "4.0", cat: "💊 Pharmacy", bg: "#EEE9FF" },
+    { icon: "🚌", name: "Hatfield Bus Station", dist: "0.3 mi", meta: "Routes to campus, St Albans & London", rating: "3.9", cat: "🚌 Bus", bg: "#FFF0F3" },
+    { icon: "🍽️", name: "Café Rouge, Hatfield", dist: "1.3 mi", meta: "25% off with TOTUM card", rating: "4.0", cat: "🍽️ Eat", bg: "#FFF3E0" },
+  ];
+
+  const filtered = activePin === "All" ? places : places.filter(p => p.cat === activePin);
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", height: "100%", background: ios.bg }}>
+      <div style={{ background: ios.navy, flexShrink: 0 }}>
+        <StatusBar />
+        <div style={{ padding: "4px 20px 20px" }}>
+          <div style={{ fontSize: 26, fontWeight: 700, color: "#fff", letterSpacing: -0.6 }}>Local Guide</div>
+          <div style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 3 }}>Near University of Hertfordshire</div>
+        </div>
+      </div>
+
+      {/* Map placeholder */}
+      <div style={{
+        background: "linear-gradient(135deg, #e8f0fe 0%, #dbeafe 50%, #ede9fe 100%)",
+        height: 160, flexShrink: 0, display: "flex", flexDirection: "column",
+        alignItems: "center", justifyContent: "center", gap: 6, position: "relative",
+      }}>
+        <div style={{ fontSize: 36 }}>🗺️</div>
+        <div style={{ fontSize: 13, fontWeight: 600, color: ios.navy }}>Hatfield, Hertfordshire</div>
+        <div style={{ fontSize: 11, color: ios.label3 }}>AL10 · Near campus</div>
+        <div style={{
+          position: "absolute", top: 10, right: 12, background: "#fff",
+          borderRadius: 10, padding: "5px 10px", fontSize: 11, fontWeight: 600,
+          color: ios.blue, boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+        }}>Open Maps →</div>
+      </div>
+
+      {/* Filter chips */}
+      <div style={{ display: "flex", gap: 8, overflowX: "auto", padding: "12px 16px 8px", flexShrink: 0, scrollbarWidth: "none", background: ios.bg }}>
+        {pins.map(p => (
+          <button key={p} onClick={() => setActivePin(p)} style={{
+            padding: "7px 14px", borderRadius: 20, border: "none", flexShrink: 0,
+            background: activePin === p ? ios.navy : ios.bg2,
+            color: activePin === p ? "#fff" : ios.label,
+            fontSize: 12, fontWeight: activePin === p ? 600 : 400,
+            cursor: "pointer", transition: "all 0.15s",
+            boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
+          }}>{p}</button>
+        ))}
+      </div>
+
+      <div style={{ flex: 1, overflowY: "auto", padding: "8px 16px 16px" }}>
+        <div style={{ background: ios.bg2, borderRadius: 18, overflow: "hidden", border: `0.5px solid ${ios.sep}` }}>
+          {filtered.map((pl, i) => (
+            <div key={pl.name}>
+              <div style={{ padding: "12px 16px", display: "flex", alignItems: "center", gap: 12, cursor: "pointer" }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 13, background: pl.bg,
+                  display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0,
+                }}>{pl.icon}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ fontSize: 14, fontWeight: 600, color: ios.label }}>{pl.name}</div>
+                  <div style={{ fontSize: 12, color: ios.label4, marginTop: 1 }}>{pl.meta}</div>
+                </div>
+                <div style={{ textAlign: "right", flexShrink: 0 }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, color: ios.label }}>{pl.dist}</div>
+                  <div style={{ fontSize: 11, color: ios.orange, marginTop: 1 }}>⭐ {pl.rating}</div>
+                </div>
+              </div>
+              {i < filtered.length - 1 && <div style={{ height: "0.5px", background: ios.sep, marginLeft: 72 }} />}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Root App ─── */
+export default function ArriveUK() {
+  const [screen, setScreen] = useState("onboard");
+  const [prevScreen, setPrev] = useState(null);
+
+  const navigate = (to) => {
+    setPrev(screen);
+    setScreen(to);
+  };
+
+  const tabScreens = ["home", "checklist", "deals", "community", "budget"];
+  const showTab = tabScreens.includes(screen);
+  const showExtra = ["docs", "local"].includes(screen);
+
+  const renderScreen = () => {
+    switch (screen) {
+      case "onboard":    return <OnboardScreen onDone={() => navigate("home")} />;
+      case "home":       return <HomeScreen onNav={navigate} />;
+      case "checklist":  return <ChecklistScreen />;
+      case "deals":      return <DealsScreen />;
+      case "budget":     return <BudgetScreen />;
+      case "docs":       return <DocsScreen />;
+      case "community":  return <CommunityScreen />;
+      case "local":      return <LocalScreen />;
+      default:           return <HomeScreen onNav={navigate} />;
+    }
+  };
+
+  return (
+    <div style={{
+      minHeight: "100vh", background: "#1a1a2e",
+      display: "flex", flexDirection: "column", alignItems: "center",
+      justifyContent: "center", padding: "20px 16px",
+      fontFamily: "-apple-system, 'SF Pro Text', BlinkMacSystemFont, 'Helvetica Neue', sans-serif",
+    }}>
+      {/* Screen selector */}
+      <div style={{
+        display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "center",
+        marginBottom: 20, maxWidth: 520,
+      }}>
+        {[
+          ["onboard","1. Onboard"], ["home","2. Home"], ["checklist","3. Checklist"],
+          ["deals","4. Deals"], ["budget","5. Budget"],
+          ["docs","6. Docs"], ["community","7. Community"], ["local","8. Local"],
+        ].map(([id, label]) => (
+          <button key={id} onClick={() => navigate(id)} style={{
+            padding: "7px 14px", borderRadius: 20, fontSize: 12, fontWeight: 500,
+            border: "none", cursor: "pointer", transition: "all 0.15s",
+            background: screen === id ? "#fff" : "rgba(255,255,255,0.12)",
+            color: screen === id ? "#0A2342" : "rgba(255,255,255,0.7)",
+          }}>{label}</button>
+        ))}
+      </div>
+
+      {/* Phone shell */}
+      <div style={{
+        width: 375, height: 812,
+        borderRadius: 54, overflow: "hidden", position: "relative",
+        boxShadow: "0 50px 100px -20px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05), inset 0 0 0 2px rgba(255,255,255,0.05)",
+        background: ios.bg,
+      }}>
+        {/* Side buttons */}
+        <div style={{ position: "absolute", left: -3, top: 130, width: 4, height: 32, background: "rgba(255,255,255,0.1)", borderRadius: "2px 0 0 2px" }} />
+        <div style={{ position: "absolute", left: -3, top: 176, width: 4, height: 60, background: "rgba(255,255,255,0.1)", borderRadius: "2px 0 0 2px" }} />
+        <div style={{ position: "absolute", left: -3, top: 248, width: 4, height: 60, background: "rgba(255,255,255,0.1)", borderRadius: "2px 0 0 2px" }} />
+        <div style={{ position: "absolute", right: -3, top: 190, width: 4, height: 90, background: "rgba(255,255,255,0.1)", borderRadius: "0 2px 2px 0" }} />
+
+        {/* Screen content */}
+        <div style={{ display: "flex", flexDirection: "column", height: "100%", overflow: "hidden" }}>
+          <div style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+            {renderScreen()}
+          </div>
+
+          {/* Back button for sub-screens */}
+          {showExtra && (
+            <div style={{
+              position: "absolute", top: 52, left: 16, zIndex: 100,
+            }}>
+              <button onClick={() => navigate("home")} style={{
+                display: "flex", alignItems: "center", gap: 4,
+                border: "none", background: "transparent", cursor: "pointer",
+                color: ios.blue, fontSize: 16, fontWeight: 500, padding: 0,
+              }}>
+                <svg width="10" height="16" viewBox="0 0 10 16" fill="none">
+                  <path d="M8 2L2 8L8 14" stroke={ios.blue} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Back
+              </button>
+            </div>
+          )}
+
+          {showTab && (
+            <>
+              <TabBar active={screen} onNav={navigate} />
+              <HomeIndicator />
+            </>
+          )}
+          {screen === "onboard" && <HomeIndicator />}
+        </div>
+      </div>
+
+      <div style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,0.25)", letterSpacing: 0.3 }}>
+        ArriveUK · iOS Prototype
+      </div>
+    </div>
+  );
+}
