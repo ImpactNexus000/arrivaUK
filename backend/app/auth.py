@@ -38,6 +38,24 @@ def create_access_token(user_id: int) -> str:
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
+def create_otp_token(email: str) -> str:
+    """Short-lived token proving OTP was verified for this email."""
+    expire = datetime.now(timezone.utc) + timedelta(minutes=15)
+    payload = {"sub": email, "purpose": "otp_verified", "exp": expire}
+    return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+
+
+def verify_otp_token(token: str) -> str | None:
+    """Returns the email if the OTP token is valid, else None."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if payload.get("purpose") != "otp_verified":
+            return None
+        return payload.get("sub")
+    except JWTError:
+        return None
+
+
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(security),
     db: Session = Depends(get_db),

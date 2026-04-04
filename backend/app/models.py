@@ -83,6 +83,18 @@ class UserProfile(Base):
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
 
+class OTPCode(Base):
+    __tablename__ = "otp_codes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, index=True, nullable=False)
+    code = Column(String, nullable=False)
+    purpose = Column(String, nullable=False)  # "register" or "login"
+    expires_at = Column(DateTime, nullable=False)
+    verified = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
+
+
 class CommunityPost(Base):
     __tablename__ = "community_posts"
 

@@ -35,10 +35,22 @@ async function uploadRequest(path, formData, method = 'POST') {
   return res.json();
 }
 
+// OTP
+export const sendOtp = (email, purpose = 'register') =>
+  request('/users/send-otp', { method: 'POST', body: JSON.stringify({ email, purpose }) });
+export const verifyOtp = (email, code) =>
+  request('/users/verify-otp', { method: 'POST', body: JSON.stringify({ email, code }) });
+
+// Password reset
+export const resetPassword = (email, otp_token, new_password) =>
+  request('/users/reset-password', { method: 'POST', body: JSON.stringify({ email, otp_token, new_password }) });
+
 // Auth — registration uses multipart (supports profile photo upload); login returns a JWT token
 export const register = (formData) => uploadRequest('/users/register', formData);
-export const login = (email, password) =>
-  request('/users/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+export const loginRequest = (email, password) =>
+  request('/users/login-request', { method: 'POST', body: JSON.stringify({ email, password }) });
+export const login = (email, password, otp_code) =>
+  request('/users/login', { method: 'POST', body: JSON.stringify({ email, password, otp_code }) });
 export const getMe = () => request('/users/me');
 export const updateProfile = (formData) => uploadRequest('/users/me', formData, 'PUT');
 

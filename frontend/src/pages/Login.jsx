@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { login } from '../api';
+import { login, loginRequest } from '../api';
 
 export default function Login({ onAuth }) {
   const navigate = useNavigate();
@@ -10,21 +10,198 @@ export default function Login({ onAuth }) {
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
+  // OTP state
+  const [otpStep, setOtpStep] = useState(false);
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpResendTimer, setOtpResendTimer] = useState(0);
+  const [otpSending, setOtpSending] = useState(false);
+  const otpRefs = useRef([]);
+
+  // OTP resend countdown
+  useEffect(() => {
+    if (otpResendTimer <= 0) return;
+    const t = setTimeout(() => setOtpResendTimer(otpResendTimer - 1), 1000);
+    return () => clearTimeout(t);
+  }, [otpResendTimer]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     setSubmitting(true);
     setError('');
     try {
-      const res = await login(email, password);
+      await loginRequest(email, password);
+      setOtpStep(true);
+      setOtpResendTimer(60);
+    } catch (err) {
+      setError(err.message || 'Login failed');
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  function handleOtpChange(index, value) {
+    if (!/^\d*$/.test(value)) return;
+    const newDigits = [...otpDigits];
+    newDigits[index] = value.slice(-1);
+    setOtpDigits(newDigits);
+
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+
+    const fullCode = newDigits.join('');
+    if (fullCode.length === 6) {
+      handleOtpLogin(fullCode);
+    }
+  }
+
+  function handleOtpKeyDown(index, e) {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  }
+
+  function handleOtpPaste(e) {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const newDigits = [...otpDigits];
+    for (let i = 0; i < 6; i++) {
+      newDigits[i] = pasted[i] || '';
+    }
+    setOtpDigits(newDigits);
+    if (pasted.length === 6) {
+      handleOtpLogin(pasted);
+    } else {
+      otpRefs.current[pasted.length]?.focus();
+    }
+  }
+
+  async function handleOtpLogin(code) {
+    setOtpVerifying(true);
+    setError('');
+    try {
+      const res = await login(email, password, code);
       localStorage.setItem('arrivauk_token', res.access_token);
       localStorage.setItem('arrivauk_user_id', res.user.id);
       localStorage.setItem('arrivauk_user_name', res.user.name);
       onAuth();
       navigate('/');
     } catch (err) {
-      setError(err.message || 'Login failed');
-      setSubmitting(false);
+      setError(err.message || 'Verification failed');
+      setOtpDigits(['', '', '', '', '', '']);
+      otpRefs.current[0]?.focus();
+    } finally {
+      setOtpVerifying(false);
     }
+  }
+
+  async function handleResendOtp() {
+    setOtpSending(true);
+    setError('');
+    try {
+      await loginRequest(email, password);
+      setOtpResendTimer(60);
+      setOtpDigits(['', '', '', '', '', '']);
+    } catch (err) {
+      setError(err.message || 'Failed to resend code');
+    } finally {
+      setOtpSending(false);
+    }
+  }
+
+  // OTP verification screen
+  if (otpStep) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0A2342] via-[#1a4a7a] to-[#1e5a96] flex flex-col relative overflow-hidden">
+        <div className="absolute w-80 h-80 rounded-full border-[28px] border-white/[0.03] -top-24 -right-24" />
+        <div className="absolute w-48 h-48 rounded-full border-[18px] border-white/[0.03] bottom-40 -left-16" />
+
+        <div className="flex-1 flex flex-col justify-center px-6 relative z-10">
+          {/* Lock icon */}
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 bg-white/[0.1] rounded-3xl flex items-center justify-center mx-auto mb-5 border border-white/[0.08]">
+              <svg className="w-10 h-10 text-ios-blue" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z" />
+              </svg>
+            </div>
+            <h1 className="text-[28px] font-bold text-white tracking-tight">Verify It's You</h1>
+            <p className="text-[15px] text-white/50 mt-1.5">
+              Enter the 6-digit code sent to
+            </p>
+            <p className="text-[15px] text-ios-blue font-medium mt-0.5">{email}</p>
+          </div>
+
+          {/* OTP input boxes */}
+          <div className="flex justify-center gap-2.5">
+            {otpDigits.map((digit, i) => (
+              <input
+                key={i}
+                ref={(el) => (otpRefs.current[i] = el)}
+                type="text"
+                inputMode="numeric"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleOtpChange(i, e.target.value)}
+                onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                onPaste={i === 0 ? handleOtpPaste : undefined}
+                className={`w-12 h-14 rounded-xl text-center text-[22px] font-bold outline-none transition-all duration-200 ${
+                  digit
+                    ? 'bg-white/[0.15] text-white border-ios-blue/60'
+                    : 'bg-white/[0.08] text-white/80 border-white/[0.08]'
+                } border focus:border-ios-blue/80 focus:bg-white/[0.12]`}
+                autoFocus={i === 0}
+              />
+            ))}
+          </div>
+
+          {/* Verifying spinner */}
+          {otpVerifying && (
+            <div className="mt-5 flex items-center justify-center gap-2 text-white/60 text-[14px]">
+              <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              Verifying...
+            </div>
+          )}
+
+          {error && (
+            <p className="mt-4 text-ios-red text-[13px] bg-ios-red/10 px-4 py-2.5 rounded-xl text-center">{error}</p>
+          )}
+
+          {/* Resend */}
+          <div className="mt-6 text-center">
+            {otpResendTimer > 0 ? (
+              <p className="text-white/30 text-[13px]">
+                Resend code in <span className="text-white/50 font-medium">{otpResendTimer}s</span>
+              </p>
+            ) : (
+              <button
+                onClick={handleResendOtp}
+                disabled={otpSending}
+                className="text-ios-blue text-[14px] font-medium hover:underline disabled:opacity-50"
+              >
+                {otpSending ? 'Sending...' : 'Resend Code'}
+              </button>
+            )}
+          </div>
+
+          {/* Back to login */}
+          <button
+            onClick={() => {
+              setOtpStep(false);
+              setOtpDigits(['', '', '', '', '', '']);
+              setError('');
+            }}
+            className="mt-6 text-white/30 text-[13px] text-center hover:text-white/50 transition-colors"
+          >
+            Back to sign in
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -78,6 +255,12 @@ export default function Login({ onAuth }) {
           {error && (
             <p className="text-ios-red text-[13px] bg-ios-red/10 px-4 py-2.5 rounded-xl">{error}</p>
           )}
+
+          <div className="text-right">
+            <Link to="/forgot-password" className="text-ios-blue text-[13px] font-medium hover:underline">
+              Forgot password?
+            </Link>
+          </div>
 
           <button
             type="submit"

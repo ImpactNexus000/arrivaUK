@@ -132,6 +132,35 @@ class TokenResponse(BaseModel):
     user: UserProfileResponse
 
 
+# --- OTP ---
+
+class OTPRequest(BaseModel):
+    email: str
+    purpose: str = "register"  # "register" or "login"
+
+class OTPVerify(BaseModel):
+    email: str
+    code: str
+
+class OTPVerifyResponse(BaseModel):
+    verified: bool
+    otp_token: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class LoginWithOTP(BaseModel):
+    email: str
+    password: str
+    otp_code: str
+
+class ResetPassword(BaseModel):
+    email: str
+    otp_token: str
+    new_password: str
+
+
 # --- Community ---
 
 class PostReplyCreate(BaseModel):

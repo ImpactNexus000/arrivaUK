@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { register, getUniversities } from '../api';
+import { register, getUniversities, sendOtp, verifyOtp } from '../api';
 
 const STUDENT_TYPES = [
   { value: 'international', label: 'International Student', desc: 'Non-EU/EEA country', icon: '🌍' },
@@ -14,7 +14,7 @@ const ARRIVAL_OPTIONS = [
   { value: 'been_here', label: 'Been Here a While', desc: 'Already settled in', icon: '🏠' },
 ];
 
-const STEP_LABELS = ['Account', 'Profile', 'Status', 'University', 'Arrival'];
+const STEP_LABELS = ['Account', 'Verify', 'Profile', 'Status', 'University', 'Arrival'];
 
 function getPasswordStrength(password) {
   let score = 0;
@@ -37,6 +37,14 @@ export default function Register({ onAuth }) {
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
+  // OTP state
+  const [otpDigits, setOtpDigits] = useState(['', '', '', '', '', '']);
+  const [otpToken, setOtpToken] = useState('');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpResendTimer, setOtpResendTimer] = useState(0);
+  const otpRefs = useRef([]);
+
   const [form, setForm] = useState({
     email: '',
     password: '',
@@ -55,6 +63,13 @@ export default function Register({ onAuth }) {
     getUniversities().then(setUniversities).catch(() => {});
   }, []);
 
+  // OTP resend countdown
+  useEffect(() => {
+    if (otpResendTimer <= 0) return;
+    const t = setTimeout(() => setOtpResendTimer(otpResendTimer - 1), 1000);
+    return () => clearTimeout(t);
+  }, [otpResendTimer]);
+
   const filteredUnis = uniSearch
     ? universities.filter((u) => u.toLowerCase().includes(uniSearch.toLowerCase()))
     : universities;
@@ -66,13 +81,15 @@ export default function Register({ onAuth }) {
   const canProceed = [
     // Step 0: Account
     emailValid && form.password.length >= 6 && passwordsMatch,
-    // Step 1: Profile
+    // Step 1: OTP Verify
+    !!otpToken,
+    // Step 2: Profile
     form.name.trim().length > 0,
-    // Step 2: Student Type
+    // Step 3: Student Type
     !!form.student_type,
-    // Step 3: University
+    // Step 4: University
     !!form.university,
-    // Step 4: Arrival Status
+    // Step 5: Arrival Status
     !!form.arrival_status,
   ];
 
@@ -83,6 +100,92 @@ export default function Register({ onAuth }) {
     const reader = new FileReader();
     reader.onload = (ev) => setPicturePreview(ev.target.result);
     reader.readAsDataURL(file);
+  }
+
+  // Send OTP when moving from step 0 to step 1
+  async function handleSendOtp() {
+    setOtpSending(true);
+    setError('');
+    try {
+      await sendOtp(form.email, 'register');
+      setStep(1);
+      setOtpResendTimer(60);
+    } catch (err) {
+      setError(err.message || 'Failed to send verification code');
+    } finally {
+      setOtpSending(false);
+    }
+  }
+
+  async function handleResendOtp() {
+    setOtpSending(true);
+    setError('');
+    try {
+      await sendOtp(form.email, 'register');
+      setOtpResendTimer(60);
+      setOtpDigits(['', '', '', '', '', '']);
+    } catch (err) {
+      setError(err.message || 'Failed to resend code');
+    } finally {
+      setOtpSending(false);
+    }
+  }
+
+  function handleOtpChange(index, value) {
+    if (!/^\d*$/.test(value)) return;
+    const newDigits = [...otpDigits];
+    newDigits[index] = value.slice(-1);
+    setOtpDigits(newDigits);
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      otpRefs.current[index + 1]?.focus();
+    }
+
+    // Auto-verify when all 6 digits entered
+    const fullCode = newDigits.join('');
+    if (fullCode.length === 6) {
+      verifyOtpCode(fullCode);
+    }
+  }
+
+  function handleOtpKeyDown(index, e) {
+    if (e.key === 'Backspace' && !otpDigits[index] && index > 0) {
+      otpRefs.current[index - 1]?.focus();
+    }
+  }
+
+  function handleOtpPaste(e) {
+    e.preventDefault();
+    const pasted = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (!pasted) return;
+    const newDigits = [...otpDigits];
+    for (let i = 0; i < 6; i++) {
+      newDigits[i] = pasted[i] || '';
+    }
+    setOtpDigits(newDigits);
+    if (pasted.length === 6) {
+      verifyOtpCode(pasted);
+    } else {
+      otpRefs.current[pasted.length]?.focus();
+    }
+  }
+
+  async function verifyOtpCode(code) {
+    setOtpVerifying(true);
+    setError('');
+    try {
+      const res = await verifyOtp(form.email, code);
+      setOtpToken(res.otp_token);
+      // Auto-advance to next step
+      setTimeout(() => setStep(2), 400);
+    } catch (err) {
+      setError(err.message || 'Invalid verification code');
+      setOtpDigits(['', '', '', '', '', '']);
+      otpRefs.current[0]?.focus();
+    } finally {
+      setOtpVerifying(false);
+    }
   }
 
   async function handleSubmit() {
@@ -96,6 +199,7 @@ export default function Register({ onAuth }) {
       fd.append('student_type', form.student_type);
       fd.append('university', form.university);
       fd.append('arrival_status', form.arrival_status);
+      fd.append('otp_token', otpToken);
       if (pictureFile) fd.append('profile_picture', pictureFile);
 
       const res = await register(fd);
@@ -111,12 +215,25 @@ export default function Register({ onAuth }) {
   }
 
   function next() {
-    if (step < 4) setStep(step + 1);
-    else handleSubmit();
+    if (step === 0) {
+      handleSendOtp();
+    } else if (step < 5) {
+      setStep(step + 1);
+    } else {
+      handleSubmit();
+    }
   }
 
   function back() {
-    if (step > 0) setStep(step - 1);
+    if (step > 0) {
+      setError('');
+      if (step === 1) {
+        // Going back from OTP to account step
+        setOtpDigits(['', '', '', '', '', '']);
+        setOtpToken('');
+      }
+      setStep(step - 1);
+    }
   }
 
   return (
@@ -248,8 +365,90 @@ export default function Register({ onAuth }) {
           </div>
         )}
 
-        {/* Step 1: Name + Profile Picture */}
+        {/* Step 1: OTP Verification */}
         {step === 1 && (
+          <div className="flex-1 flex flex-col animate-fade-in">
+            <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
+              Verify Your Email
+            </h1>
+            <p className="text-[15px] text-white/60 mt-1.5 leading-relaxed">
+              We sent a 6-digit code to
+            </p>
+            <p className="text-[15px] text-ios-blue font-medium mt-0.5">{form.email}</p>
+
+            {/* OTP success state */}
+            {otpToken ? (
+              <div className="mt-10 flex flex-col items-center gap-4 animate-fade-in">
+                <div className="w-16 h-16 rounded-full bg-ios-green/20 flex items-center justify-center">
+                  <svg className="w-8 h-8 text-ios-green" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="text-white/70 text-[15px] font-medium">Email verified!</p>
+              </div>
+            ) : (
+              <>
+                {/* OTP input boxes */}
+                <div className="mt-8 flex justify-center gap-2.5">
+                  {otpDigits.map((digit, i) => (
+                    <input
+                      key={i}
+                      ref={(el) => (otpRefs.current[i] = el)}
+                      type="text"
+                      inputMode="numeric"
+                      maxLength={1}
+                      value={digit}
+                      onChange={(e) => handleOtpChange(i, e.target.value)}
+                      onKeyDown={(e) => handleOtpKeyDown(i, e)}
+                      onPaste={i === 0 ? handleOtpPaste : undefined}
+                      className={`w-12 h-14 rounded-xl text-center text-[22px] font-bold outline-none transition-all duration-200 ${
+                        digit
+                          ? 'bg-white/[0.15] text-white border-ios-blue/60'
+                          : 'bg-white/[0.08] text-white/80 border-white/[0.08]'
+                      } border focus:border-ios-blue/80 focus:bg-white/[0.12]`}
+                      autoFocus={i === 0}
+                    />
+                  ))}
+                </div>
+
+                {/* Verifying spinner */}
+                {otpVerifying && (
+                  <div className="mt-5 flex items-center justify-center gap-2 text-white/60 text-[14px]">
+                    <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Verifying...
+                  </div>
+                )}
+
+                {error && (
+                  <p className="mt-4 text-ios-red text-[13px] bg-ios-red/10 px-4 py-2.5 rounded-xl text-center">{error}</p>
+                )}
+
+                {/* Resend */}
+                <div className="mt-6 text-center">
+                  {otpResendTimer > 0 ? (
+                    <p className="text-white/30 text-[13px]">
+                      Resend code in <span className="text-white/50 font-medium">{otpResendTimer}s</span>
+                    </p>
+                  ) : (
+                    <button
+                      onClick={handleResendOtp}
+                      disabled={otpSending}
+                      className="text-ios-blue text-[14px] font-medium hover:underline disabled:opacity-50"
+                    >
+                      {otpSending ? 'Sending...' : 'Resend Code'}
+                    </button>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Step 2: Name + Profile Picture */}
+        {step === 2 && (
           <div className="flex-1 flex flex-col animate-fade-in">
             <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
               Your Profile
@@ -312,8 +511,8 @@ export default function Register({ onAuth }) {
           </div>
         )}
 
-        {/* Step 2: Student Type */}
-        {step === 2 && (
+        {/* Step 3: Student Type */}
+        {step === 3 && (
           <div className="flex-1 flex flex-col animate-fade-in">
             <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
               Student Status
@@ -349,8 +548,8 @@ export default function Register({ onAuth }) {
           </div>
         )}
 
-        {/* Step 3: University */}
-        {step === 3 && (
+        {/* Step 4: University */}
+        {step === 4 && (
           <div className="flex-1 flex flex-col animate-fade-in">
             <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
               Your University
@@ -393,8 +592,8 @@ export default function Register({ onAuth }) {
           </div>
         )}
 
-        {/* Step 4: Arrival Status */}
-        {step === 4 && (
+        {/* Step 5: Arrival Status */}
+        {step === 5 && (
           <div className="flex-1 flex flex-col animate-fade-in">
             <h1 className="text-[28px] font-bold text-white tracking-tight mt-4">
               Your Arrival Status
@@ -436,7 +635,7 @@ export default function Register({ onAuth }) {
 
         {/* Bottom navigation */}
         <div className="mt-auto pb-10 pt-4 flex gap-3">
-          {step > 0 && (
+          {step > 0 && step !== 1 && (
             <button
               onClick={back}
               className="px-6 py-4 rounded-2xl bg-white/[0.08] text-white text-base font-semibold hover:bg-white/[0.12] transition-colors"
@@ -444,23 +643,33 @@ export default function Register({ onAuth }) {
               Back
             </button>
           )}
-          <button
-            onClick={next}
-            disabled={!canProceed[step] || submitting}
-            className={`flex-1 py-4 rounded-2xl text-white text-base font-semibold tracking-tight disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 ${
-              step === 4 ? 'bg-ios-green hover:bg-ios-green/90' : 'bg-ios-blue hover:bg-ios-blue/90'
-            }`}
-          >
-            {submitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Creating account...
-              </span>
-            ) : step === 4 ? "Let's Go!" : 'Continue'}
-          </button>
+          {step !== 1 && (
+            <button
+              onClick={next}
+              disabled={!canProceed[step] || submitting || otpSending}
+              className={`flex-1 py-4 rounded-2xl text-white text-base font-semibold tracking-tight disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-200 ${
+                step === 5 ? 'bg-ios-green hover:bg-ios-green/90' : 'bg-ios-blue hover:bg-ios-blue/90'
+              }`}
+            >
+              {submitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Creating account...
+                </span>
+              ) : otpSending ? (
+                <span className="flex items-center justify-center gap-2">
+                  <svg className="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Sending code...
+                </span>
+              ) : step === 5 ? "Let's Go!" : 'Continue'}
+            </button>
+          )}
         </div>
       </div>
     </div>

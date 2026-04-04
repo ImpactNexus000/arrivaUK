@@ -12,6 +12,7 @@ import Documents from './pages/Documents';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Profile from './pages/Profile';
+import ForgotPassword from './pages/ForgotPassword';
 
 export default function App() {
   const [authed, setAuthed] = useState(
@@ -24,6 +25,7 @@ export default function App() {
         <Routes>
           <Route path="/register" element={<Register onAuth={() => setAuthed(true)} />} />
           <Route path="/login" element={<Login onAuth={() => setAuthed(true)} />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>
